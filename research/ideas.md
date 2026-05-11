@@ -13,4 +13,24 @@ now all the routing is working as it should we need to implement a road cost for
 
 Next stage -> create a vehicle for simulation on roads. Each vehicle has a start and goal node, we then randomise the location based on the main geographical area we want to focus on, in this case it is OXFORD. So we could geenrate multiple vehicles at a time to simulate real congestion on roads. we want to be able to pick a location from the nodes on the current graph, not random coordinates as some of these coordinates will not be roads.
 
-changed hard-coded locational values, using random variable nodes on the master graph to create vehicles for simulation 
+changed hard-coded locational values, using random variable nodes on the master graph to create vehicles for simulation: fixed by using Try and Except -> to get the following algorithm flow for each vehicle:
+
+    valid_route = False
+
+    while not valid_route:
+
+        generate random nodes
+
+        try:
+            create vehicle
+
+            add vehicle
+
+            valid_route = True
+
+        except:
+            retry
+
+Now that this is working we are able to give each rode a capacity. This will be researched -> Motorways will most likely have the highst capacity compared to residential areas. Check //research_log.md// to find this.
+
+To calculate this we want to increment the traffic count every time an edge appears on that given road 

@@ -45,31 +45,57 @@ def runSimulation():
 
     for i in range(0, num_of_vehicles):
 
-        # random start and goal nodes
-        random_start = random.choice(Nodes)
-        random_goal = random.choice(Nodes)
+        valid_route = False
 
-        # make sure start != goal
-        while random_start == random_goal:
+        while not valid_route:
+
+            # random start and goal nodes
+            random_start = random.choice(Nodes)
             random_goal = random.choice(Nodes)
 
-        # create vehicle
-        vehicle = Vehicle(
-            G,
-            random_start,
-            random_goal
-        )
+            # make sure start != goal
+            while random_start == random_goal:
+                random_goal = random.choice(Nodes)
 
-        # store vehicle
-        vehicles.append(vehicle)
+            try:
 
-        # console output
-        print(f"Vehicle {i + 1}")
-        print("Start Node:", vehicle.start_node)
-        print("Goal Node:", vehicle.goal_node)
-        print("Current Node:", vehicle.current_node)
-        print("Route Length:", len(vehicle.route))
-        print()
+                # create vehicle
+                vehicle = Vehicle(
+                    G,
+                    random_start,
+                    random_goal
+                )
+
+                # store vehicle
+                vehicles.append(vehicle)
+
+                # calculate number of vehicles that occupy a singular edge
+
+                edge_count = {}
+
+                for vehicle in vehicles:
+                    route = vehicle.route
+                    #iterate through neighbouring nodes to obtain edges
+                    for i in range(len(route) - 1):
+                        edge = (route[1], route[i+1])
+                        if edge not in edge_count:
+                            edge_count[edge] = 0
+                        edge_count[edge] +=1
+
+                # console output
+                print(f"Vehicle {i + 1}")
+                print("Start Node:", vehicle.start_node)
+                print("Goal Node:", vehicle.goal_node)
+                print("Current Node:", vehicle.current_node)
+                print("Route Length:", len(vehicle.route))
+                print()
+
+                # route successfully created
+                valid_route = True
+
+            except nx.NetworkXNoPath:
+
+                print("No valid path found. Generating new nodes...")
 
     # =========================
     # VISUALISATION
@@ -112,7 +138,6 @@ def runSimulation():
     # =========================
 
     mpl.show()
-
 
 # =========================
 # RUN PROGRAM

@@ -48,3 +48,29 @@ Possible metrics to consider:
  -Travel Time, -Congestion Score (user based), -Route recalculation frequency, computational runtime for the algorithm and path optimality (we dont want a user to go back on themselves for hours to end up being in the same spot they started.)
 
 As stated in [Measuring Traffic Congestion] it states that "The distribution of traffic is evaluated by two measures: the minimum maximum arc utilization in the network (a system perspective) and the weighted average experienced travel inconvenience (a user perspective). Arc utilization, i.e., the ratio of the number of vehicles entering an arc per time unit and its capacity,". Which would allow us to keep a track of the number of vehicles on a specific road and then update weight scores depending on the total (Capacity of the road / number of vehicles on the road can give us a total weight score that will effect the algorithms decisions. )
+
+issue arised when trying to add a large volume of vehicles with the error message: "Traceback (most recent call last):
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/graph.py", line 121, in <module>
+    runSimulation()
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/graph.py", line 57, in runSimulation
+    vehicle = Vehicle(
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/vehicle.py", line 17, in __init__
+    self.route = nx.shortest_path(
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/.venv/lib/python3.9/site-packages/networkx/utils/backends.py", line 412, in __call__
+    return self.orig_func(*args, **kwargs)
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/.venv/lib/python3.9/site-packages/networkx/algorithms/shortest_paths/generic.py", line 175, in shortest_path
+    _, paths = nx.bidirectional_dijkstra(G, source, target, weight)
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/.venv/lib/python3.9/site-packages/networkx/utils/backends.py", line 412, in __call__
+    return self.orig_func(*args, **kwargs)
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/.venv/lib/python3.9/site-packages/networkx/algorithms/shortest_paths/weighted.py", line 2431, in bidirectional_dijkstra
+    raise nx.NetworkXNoPath(f"No path between {source} and {target}.")
+networkx.exception.NetworkXNoPath: No path between 27480442 and 1411621893.
+ "
+
+Find how many vehicles are on each type of road
+
+traffic by road type " Traffic Volumes by Road Type (GB)A-Roads (44% of Traffic): The highest volume, with approximately 149.7 billion vehicle miles as of September 2025. These are arterial routes.Minor Roads (35% of Traffic): Includes B-roads, C-roads, and unclassified roads, with roughly 117.5 billion vehicle miles. These are local distributor roads and residential streets.Motorways (21% of Traffic): Around 70.6 billion vehicle miles, representing high-volume, high-speed regional travel."
+
+EXACT FIGURES COMPUTABLE : Motorways: Average of ~21,000 vehicles/day.A Roads: Average of ~16,000 vehicles/day.B Roads: Average of ~11,000 vehicles/day.Minor Roads: Average of ~5,000 vehicles/day
+Xmap.ai. (2024). The United Kingdom Road Traffic in 2024: Everything You need to know. [online] Available at: https://www.xmap.ai/blog/the-united-kingdom-road-traffic-in-2024-everything-you-need-to-know.
+‌
