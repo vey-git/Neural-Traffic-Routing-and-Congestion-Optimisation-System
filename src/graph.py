@@ -1,48 +1,121 @@
 import networkx as nx
-import matplotlib as mpl
+import matplotlib.pyplot as mpl
 import osmnx as os
-from geopy.geocoders import Nominatim
+import random
 
-#create the weighted graph using the library networkx.
-
-#obtain closest node from the given area.
-
-#obtain user inputs
-loc = Nominatim(user_agent="GetLoc") #calling the Nominatim tool to get location
-
-#location of start location
-userLocationStart = input("Enter Start Location: ")
-get_loc = loc.geocode(userLocationStart)
-#obtain latitude and longitude coordinates from get_loc
-lon1 = get_loc.longitude
-lat1 = get_loc.latitude
+from src.vehicle import Vehicle
 
 
-l1 = (lat1,lon1)
+# =========================
+# USER INPUTS
+# =========================
 
-G = os.graph_from_point(l1, network_type='drive', dist=500)
-l1_node_id = os.nearest_nodes(G, lon1, lat1) #obtain closes node from locational points
-
-#location of goal location
-userLocationGoal = input("Enter Start Location: ")
-get_loc = loc.geocode(userLocationGoal)
-#obtain latitude and longitude coordinates from get_loc
-lon2 = get_loc.longitude
-lat2 = get_loc.latitude
-
-l2 = (lat2,lon2)
-#obtain roads/intersections/nodes
-G = os.graph_from_point(l2, network_type='drive', dist=500)
-l2_node_io = os.nearest_nodes(G, lat2, lon2) #obtain nearest goal node location
-
-#calculate distance between the start and goal
-dist = os.distance.great_circle(lat1,lon1,lat2,lon2)
-
-print(f"Distance from Start to Goal is {dist} metres")
-
-#visually display output
-os.plot_graph(G)
+num_of_vehicles = int(
+    input("How many vehicles do you want to simulate?: ")
+)
 
 
+# =========================
+# GRAPH + ROUTING
+# =========================
+
+def runSimulation():
+
+    # =========================
+    # CREATE MASTER GRAPH
+    # =========================
+
+    G = os.graph_from_place(
+        "Oxford, England",
+        network_type="drive"
+    )
+
+    # add speed/travel time data
+    G = os.add_edge_speeds(G)
+    G = os.add_edge_travel_times(G)
+
+    # all graph nodes
+    Nodes = list(G.nodes)
+
+    # =========================
+    # GENERATE VEHICLES
+    # =========================
+
+    vehicles = []
+
+    for i in range(0, num_of_vehicles):
+
+        # random start and goal nodes
+        random_start = random.choice(Nodes)
+        random_goal = random.choice(Nodes)
+
+        # make sure start != goal
+        while random_start == random_goal:
+            random_goal = random.choice(Nodes)
+
+        # create vehicle
+        vehicle = Vehicle(
+            G,
+            random_start,
+            random_goal
+        )
+
+        # store vehicle
+        vehicles.append(vehicle)
+
+        # console output
+        print(f"Vehicle {i + 1}")
+        print("Start Node:", vehicle.start_node)
+        print("Goal Node:", vehicle.goal_node)
+        print("Current Node:", vehicle.current_node)
+        print("Route Length:", len(vehicle.route))
+        print()
+
+    # =========================
+    # VISUALISATION
+    # =========================
+
+    fig, ax = os.plot_graph(
+        G,
+        node_size=0,
+        edge_color='white',
+        edge_linewidth=0.5,
+        bgcolor='black',
+        show=False,
+        close=False
+    )
+
+    # title
+    ax.set_title(
+        "Traffic Routing Simulation",
+        fontsize=18,
+        color='white',
+        pad=20
+    )
+
+    # =========================
+    # PLOT VEHICLES
+    # =========================
+
+    for vehicle in vehicles:
+
+        ax.scatter(
+            G.nodes[vehicle.current_node]['x'],
+            G.nodes[vehicle.current_node]['y'],
+            color='yellow',
+            s=40,
+            zorder=10
+        )
+
+    # =========================
+    # SHOW PLOT
+    # =========================
+
+    mpl.show()
 
 
+# =========================
+# RUN PROGRAM
+# =========================
+
+runSimulation()
