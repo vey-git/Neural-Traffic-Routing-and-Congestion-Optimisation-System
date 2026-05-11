@@ -34,3 +34,36 @@ changed hard-coded locational values, using random variable nodes on the master 
 Now that this is working we are able to give each rode a capacity. This will be researched -> Motorways will most likely have the highst capacity compared to residential areas. Check //research_log.md// to find this.
 
 To calculate this we want to increment the traffic count every time an edge appears on that given road 
+
+Next case is we could find the average of all edges within the graph. if an edge is more than average its travel_time is increased if its less then its decreased : 
+< 0.5
+
+Very low traffic
+
+1.0x
+
+0.5 – 1.0
+
+Normal traffic
+
+1.1x
+
+1.0 – 1.5
+
+Moderate congestion
+
+1.4x
+
+1.5 – 2.0
+
+Heavy congestion
+
+1.8x
+
+2.0
+
+Severe congestion
+
+2.5x
+
+we have an average, if the edge/road is less than the average it stays at the baseline speed as it wont speed up the route

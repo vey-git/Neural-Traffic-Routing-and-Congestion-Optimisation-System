@@ -3,6 +3,8 @@ import matplotlib.pyplot as mpl
 import osmnx as os
 import random
 
+from numpy.ma.extras import average
+
 from src.vehicle import Vehicle
 
 
@@ -81,6 +83,52 @@ def runSimulation():
                         if edge not in edge_count:
                             edge_count[edge] = 0
                         edge_count[edge] +=1
+
+                #calculate edge average
+                total = 0
+                for edges in edge_count:
+                    total += edge_count[edges]
+                average_edge_count = total/len(edge_count)
+
+                #calculate traffic per edge
+                for edge in edge_count:
+
+                    usage = edge_count[edge]
+
+                    u, v = edge
+
+                    # check edge exists in graph
+                    if G.has_edge(u, v):
+
+                        edge_data = G[u][v]
+
+                        # get first available edge key
+                        first_key = list(edge_data.keys())[0]
+
+                        # current travel time
+                        current_time = edge_data[first_key]['travel_time']
+
+                        # congestion multiplier
+                        if usage < average_edge_count * 0.5:
+                            multiplier = 1.0
+
+                        elif usage < average_edge_count:
+                            multiplier = 1.1
+
+                        elif usage < average_edge_count * 1.5:
+                            multiplier = 1.4
+
+                        elif usage < average_edge_count * 2:
+                            multiplier = 1.8
+
+                        else:
+                            multiplier = 2.5
+
+                        # update travel time
+                        new_time = current_time * multiplier
+
+                        edge_data[first_key]['travel_time'] = new_time
+
 
                 # console output
                 print(f"Vehicle {i + 1}")
