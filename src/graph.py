@@ -89,7 +89,6 @@ def runSimulation():
                 for edges in edge_count:
                     total += edge_count[edges]
                 average_edge_count = total/len(edge_count)
-
                 #calculate traffic per edge
                 for edge in edge_count:
 
@@ -99,7 +98,6 @@ def runSimulation():
 
                     # check edge exists in graph
                     if G.has_edge(u, v):
-
                         edge_data = G[u][v]
 
                         # get first available edge key
@@ -111,6 +109,8 @@ def runSimulation():
                         # congestion multiplier
                         if usage < average_edge_count * 0.5:
                             multiplier = 1.0
+
+
 
                         elif usage < average_edge_count:
                             multiplier = 1.1
@@ -149,11 +149,45 @@ def runSimulation():
     # VISUALISATION
     # =========================
 
+    edge_colours = []
+    edge_widths = []
+
+    # loop through all graph edges
+    for u, v, key in G.edges(keys=True):
+
+        usage = 0
+
+        # check if edge exists in congestion dictionary
+        if (u, v) in edge_count:
+            usage = edge_count[(u, v)]
+
+        # colour roads based on congestion
+        if usage < average_edge_count * 0.5:
+
+            edge_colours.append("lime")
+            edge_widths.append(0.5)
+
+        elif usage < average_edge_count:
+
+            edge_colours.append("yellow")
+            edge_widths.append(1)
+
+        elif usage < average_edge_count * 1.5:
+
+            edge_colours.append("orange")
+            edge_widths.append(2)
+
+        else:
+
+            edge_colours.append("red")
+            edge_widths.append(3)
+
+    # plot graph
     fig, ax = os.plot_graph(
         G,
         node_size=0,
-        edge_color='white',
-        edge_linewidth=0.5,
+        edge_color=edge_colours,
+        edge_linewidth=edge_widths,
         bgcolor='black',
         show=False,
         close=False
@@ -161,7 +195,7 @@ def runSimulation():
 
     # title
     ax.set_title(
-        "Traffic Routing Simulation",
+        "Oxford Traffic Congestion Simulation",
         fontsize=18,
         color='white',
         pad=20
@@ -172,12 +206,11 @@ def runSimulation():
     # =========================
 
     for vehicle in vehicles:
-
         ax.scatter(
             G.nodes[vehicle.current_node]['x'],
             G.nodes[vehicle.current_node]['y'],
-            color='yellow',
-            s=40,
+            color='cyan',
+            s=15,
             zorder=10
         )
 
