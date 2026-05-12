@@ -120,3 +120,7 @@ Average Edge Usage AFTER: 3.187732342007435
 There is still congestion as these weights wont completely negate congestion, the vehicles are only determining what the shortest path from their current node is, in theory many of the vehicles will have the same shortest path, we can see this in the figure where most congestion comes from routes that have no alternatives, for example a long highway.
 
 This highlights that obtaining the shortest path for each vehicle is insufficient as a singular algorithm to mitigate congestion
+
+After completing modularisation i want to update the metrics-->
+
+Metrics: average edge usage, maximum edge usage, Total travel cost, average vehicle route cost, number of rerouted vehicles, runtime of algorithm, congestion distribution
