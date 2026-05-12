@@ -2,6 +2,7 @@ import random
 import networkx as nx
 import matplotlib.pyplot as mpl
 import osmnx as os
+import time
 
 from vehicle import Vehicle
 from graph import createGraph
@@ -9,13 +10,19 @@ from graph import createGraph
 from metrics import (
     calculateEdgeUsage,
     calculateAverageEdgeUsage,
-    updateCongestionWeights
+    calculateMaxEdgeUsage,
+    calculateTotalTravelCost,
+    calculateAverageTravelCost,
+    calculateRouteChanges,
+    countCongestionLevels,
+    updateCongestionWeights,
+    exportResultsCSV
 )
 
 
 
 def runSimulation(num_of_vehicles):
-
+    start_time = time.time() #starts the runtime of the program.
     # =========================
     # CREATE GRAPH
     # =========================
@@ -49,7 +56,7 @@ def runSimulation(num_of_vehicles):
                     random_start,
                     random_goal
                 )
-
+                vehicle.original_route = vehicle.route.copy()
                 vehicles.append(vehicle)
 
                 print(f"Vehicle {i + 1} Created")
@@ -59,6 +66,31 @@ def runSimulation(num_of_vehicles):
             except nx.NetworkXNoPath:
 
                 print("Invalid route... retrying")
+    edge_count_before = calculateEdgeUsage(vehicles)
+
+    #create variables before rerouting
+    average_before = calculateAverageEdgeUsage(
+        edge_count_before
+    )
+
+    max_before = calculateMaxEdgeUsage(
+        edge_count_before
+    )
+
+    total_cost_before = calculateTotalTravelCost(
+        G,
+        vehicles
+    )
+
+    average_cost_before = calculateAverageTravelCost(
+        G,
+        vehicles
+    )
+
+    congestion_before = countCongestionLevels(
+        edge_count_before,
+        average_before
+    )
 
     # =========================
     # INITIAL CONGESTION
@@ -85,7 +117,7 @@ def runSimulation(num_of_vehicles):
     # =========================
     # REROUTE VEHICLES
     # =========================
-
+    vehicle.original_route = vehicle.route.copy() #store a copy for measuring metrics
     changed_routes = 0
 
     for vehicle in vehicles:
@@ -100,6 +132,37 @@ def runSimulation(num_of_vehicles):
 
     print(f"Vehicles Rerouted: {changed_routes}")
 
+    #recalculate metrics based on rerouting
+    edge_count_after = calculateEdgeUsage(
+        vehicles
+    )
+
+    average_after = calculateAverageEdgeUsage(
+        edge_count_after
+    )
+
+    max_after = calculateMaxEdgeUsage(
+        edge_count_after
+    )
+
+    total_cost_after = calculateTotalTravelCost(
+        G,
+        vehicles
+    )
+
+    average_cost_after = calculateAverageTravelCost(
+        G,
+        vehicles
+    )
+
+    congestion_after = countCongestionLevels(
+        edge_count_after,
+        average_after
+    )
+
+    rerouted_vehicles = calculateRouteChanges(
+        vehicles
+    )
     # =========================
     # NEW CONGESTION
     # =========================
@@ -175,3 +238,57 @@ def runSimulation(num_of_vehicles):
         )
 
     mpl.show()
+
+    end_time = time.time()
+
+    runtime = end_time - start_time #final runtime
+
+    # =========================
+    # Metrics
+    # =========================
+
+    print(f"-------Metric Results-------\n")
+
+    print(f"Vehicles Simulated: {num_of_vehicles}")
+
+    print(f"Average Edge Usage: {average_after}")
+    print(f"Maximum Edge Usage: {max_after}")
+
+    print(f"Total Travel Cost: {total_cost_after}")
+    print(f"Average Travel Cost: {average_cost_after}")
+
+    print(f"Vehicles Rerouted: {rerouted_vehicles}")
+
+    print(f"Runtime: {runtime:.2f} seconds")
+
+    print("\n===== CONGESTION DISTRIBUTION =====")
+
+    print(f"Green Edges: {congestion_after['green']}")
+    print(f"Yellow Edges: {congestion_after['yellow']}")
+    print(f"Orange Edges: {congestion_after['orange']}")
+    print(f"Red Edges: {congestion_after['red']}")
+
+    # =========================
+    # Export results
+    # =========================
+
+    exportResultsCSV([
+
+        num_of_vehicles,
+        True,
+
+        average_after,
+        max_after,
+
+        total_cost_after,
+        average_cost_after,
+
+        congestion_after['green'],
+        congestion_after['yellow'],
+        congestion_after['orange'],
+        congestion_after['red'],
+
+        rerouted_vehicles,
+
+        runtime
+    ])
