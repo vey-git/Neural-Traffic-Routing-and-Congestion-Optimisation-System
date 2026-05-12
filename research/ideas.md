@@ -124,3 +124,20 @@ This highlights that obtaining the shortest path for each vehicle is insufficien
 After completing modularisation i want to update the metrics-->
 
 Metrics: average edge usage, maximum edge usage, Total travel cost, average vehicle route cost, number of rerouted vehicles, runtime of algorithm, congestion distribution
+
+Next change: Update visuals and create more graphs:
+
+Vehicle vs Runtime
+
+Vehicle vs Average Edge Usage
+
+Vehicle vs rerouted vehicles
+
+Vehicles vs maximum edge usage
+
+Importing pandas to visualise well based on our outputted csv
+
+
+Implementation of A* algorithm, 
+Implement heuristic function within the vehicle class so it can either call the A* or Dijkstras shortest path "nx"
+

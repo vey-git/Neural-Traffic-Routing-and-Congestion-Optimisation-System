@@ -74,3 +74,13 @@ traffic by road type " Traffic Volumes by Road Type (GB)A-Roads (44% of Traffic)
 EXACT FIGURES COMPUTABLE : Motorways: Average of ~21,000 vehicles/day.A Roads: Average of ~16,000 vehicles/day.B Roads: Average of ~11,000 vehicles/day.Minor Roads: Average of ~5,000 vehicles/day
 Xmap.ai. (2024). The United Kingdom Road Traffic in 2024: Everything You need to know. [online] Available at: https://www.xmap.ai/blog/the-united-kingdom-road-traffic-in-2024-everything-you-need-to-know.
 ‌
+
+Implementation of A* -> useful benchmark as an informed search with a direct upgrade to the original Dijkstras algorithm already used.
+uses heuristics to estimate costs from the start to goal-> if nodes are too far away from the goal then the alogorithm will recalulate : Sandberg, O. (2024). Pathfinding Algorithm Comparison In Dynamic Congested Environment. [online] Available at: https://www.diva-portal.org/smash/get/diva2:1879887/FULLTEXT01.pdf.
+‌
+Diagonal movement is allowed with euclidean distances. Combination of G-Scores and H-Scores and a pathfinding queue.
+
+Mathematical component of A* f(n)=g(n)+h(n) Where:
+
+* g(n) = current path cost,
+* h(n) = estimated remaining cost.

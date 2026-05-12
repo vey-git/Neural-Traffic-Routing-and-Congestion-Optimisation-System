@@ -3,6 +3,9 @@ import networkx as nx
 import matplotlib.pyplot as mpl
 import osmnx as os
 import time
+import pandas as pd
+
+from matplotlib.pyplot import figtext
 
 from vehicle import Vehicle
 from graph import createGraph
@@ -174,74 +177,7 @@ def runSimulation(num_of_vehicles):
     )
 
     print(f"Average Edge Usage AFTER: {average_after}")
-
-    # =========================
-    # VISUALISATION
-    # =========================
-
-    edge_colours = []
-    edge_widths = []
-
-    for u, v, key in G.edges(keys=True):
-
-        usage = 0
-
-        if (u, v) in edge_count_after:
-            usage = edge_count_after[(u, v)]
-
-        if usage < average_after * 0.5:
-
-            edge_colours.append("lime")
-            edge_widths.append(0.5)
-
-        elif usage < average_after:
-
-            edge_colours.append("yellow")
-            edge_widths.append(1)
-
-        elif usage < average_after * 1.5:
-
-            edge_colours.append("orange")
-            edge_widths.append(2)
-
-        else:
-
-            edge_colours.append("red")
-            edge_widths.append(3)
-
-    fig, ax = os.plot_graph(
-        G,
-        node_size=0,
-        edge_color=edge_colours,
-        edge_linewidth=edge_widths,
-        bgcolor='black',
-        show=False,
-        close=False
-    )
-
-    ax.set_title(
-        "Oxford Traffic Congestion Simulation",
-        fontsize=18,
-        color='white',
-        pad=20
-    )
-
-    # plot vehicles
-    for vehicle in vehicles:
-
-        ax.scatter(
-            G.nodes[vehicle.current_node]['x'],
-            G.nodes[vehicle.current_node]['y'],
-            color='cyan',
-            s=15,
-            zorder=10
-        )
-
-    mpl.show()
-
-    end_time = time.time()
-
-    runtime = end_time - start_time #final runtime
+    runtime = start_time
 
     # =========================
     # Metrics
