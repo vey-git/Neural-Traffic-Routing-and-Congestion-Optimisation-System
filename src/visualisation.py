@@ -1,5 +1,6 @@
-import pandas as pd
 import matplotlib.pyplot as mpl
+import osmnx as os
+import pandas as pd
 
 
 # =========================
@@ -11,426 +12,344 @@ mpl.style.use('ggplot')
 TITLE_SIZE = 20
 LABEL_SIZE = 14
 TICK_SIZE = 12
+
 LINE_WIDTH = 3
 MARKER_SIZE = 8
 
 
 # =========================
-# LOAD CSV DATA
+# HEATMAP FUNCTION
 # =========================
 
-# results.csv should be generated
-# automatically from metrics.py
+def plotCongestionHeatmap(
 
-data = pd.read_csv("results.csv")
+    G,
+    edge_count,
+    average_edge_usage,
+    algorithm,
+    vehicle_count,
+    vehicles
 
+):
 
-# =========================
-# GRAPH 1
-# RUNTIME SCALING
-# =========================
+    edge_colours = []
+    edge_widths = []
 
-fig, ax = mpl.subplots(figsize=(11, 6))
+    # =========================
+    # EDGE COLOURS
+    # =========================
 
-ax.plot(
-    data["vehicles"],
-    data["runtime_seconds"],
-    marker='o',
-    linewidth=LINE_WIDTH,
-    markersize=MARKER_SIZE,
-    label='Runtime'
-)
+    for u, v, key in G.edges(keys=True):
 
-ax.set_title(
-    "Simulation Runtime Scaling",
-    fontsize=TITLE_SIZE,
-    pad=15
-)
+        usage = 0
 
-ax.set_xlabel(
-    "Number of Vehicles",
-    fontsize=LABEL_SIZE
-)
+        if (u, v) in edge_count:
 
-ax.set_ylabel(
-    "Runtime (seconds)",
-    fontsize=LABEL_SIZE
-)
+            usage = edge_count[(u, v)]
 
-ax.tick_params(labelsize=TICK_SIZE)
+        # LOW CONGESTION
+        if usage < average_edge_usage * 0.5:
 
-ax.grid(True)
+            edge_colours.append("lime")
+            edge_widths.append(0.3)
 
-ax.legend(fontsize=12)
+        # MODERATE CONGESTION
+        elif usage < average_edge_usage:
 
-mpl.tight_layout()
+            edge_colours.append("yellow")
+            edge_widths.append(1)
 
-mpl.savefig(
-    "runtime_scaling.png",
-    dpi=300
-)
+        # HIGH CONGESTION
+        elif usage < average_edge_usage * 1.5:
 
-mpl.show()
+            edge_colours.append("orange")
+            edge_widths.append(2)
 
+        # SEVERE CONGESTION
+        else:
 
-# =========================
-# GRAPH 2
-# AVERAGE EDGE USAGE
-# =========================
+            edge_colours.append("red")
+            edge_widths.append(3)
 
-fig, ax = mpl.subplots(figsize=(11, 6))
+    # =========================
+    # PLOT GRAPH
+    # =========================
 
-ax.plot(
-    data["vehicles"],
-    data["average_edge_usage"],
-    marker='o',
-    linewidth=LINE_WIDTH,
-    markersize=MARKER_SIZE,
-    label='Average Edge Usage'
-)
+    fig, ax = os.plot_graph(
 
-ax.set_title(
-    "Average Congestion Growth",
-    fontsize=TITLE_SIZE,
-    pad=15
-)
+        G,
 
-ax.set_xlabel(
-    "Number of Vehicles",
-    fontsize=LABEL_SIZE
-)
+        node_size=0,
 
-ax.set_ylabel(
-    "Average Edge Usage",
-    fontsize=LABEL_SIZE
-)
+        edge_color=edge_colours,
 
-ax.tick_params(labelsize=TICK_SIZE)
+        edge_linewidth=edge_widths,
 
-ax.grid(True)
+        bgcolor='black',
 
-ax.legend(fontsize=12)
+        show=False,
 
-mpl.tight_layout()
+        close=False
 
-mpl.savefig(
-    "average_congestion_growth.png",
-    dpi=300
-)
+    )
 
-mpl.show()
+    # =========================
+    # PLOT VEHICLES
+    # =========================
 
+    for vehicle in vehicles:
 
-# =========================
-# GRAPH 3
-# MAXIMUM BOTTLENECK
-# =========================
+        ax.scatter(
 
-fig, ax = mpl.subplots(figsize=(11, 6))
+            G.nodes[vehicle.current_node]['x'],
 
-ax.plot(
-    data["vehicles"],
-    data["max_edge_usage"],
-    marker='o',
-    linewidth=LINE_WIDTH,
-    markersize=MARKER_SIZE,
-    label='Maximum Edge Usage'
-)
+            G.nodes[vehicle.current_node]['y'],
 
-ax.set_title(
-    "Maximum Bottleneck Severity",
-    fontsize=TITLE_SIZE,
-    pad=15
-)
+            color='cyan',
 
-ax.set_xlabel(
-    "Number of Vehicles",
-    fontsize=LABEL_SIZE
-)
+            s=8,
 
-ax.set_ylabel(
-    "Maximum Edge Usage",
-    fontsize=LABEL_SIZE
-)
+            zorder=10
 
-ax.tick_params(labelsize=TICK_SIZE)
+        )
 
-ax.grid(True)
+    # =========================
+    # TITLE
+    # =========================
 
-ax.legend(fontsize=12)
+    ax.set_title(
 
-mpl.tight_layout()
+        f"{algorithm.upper()} Traffic Heatmap ({vehicle_count} Vehicles)",
 
-mpl.savefig(
-    "maximum_bottleneck_severity.png",
-    dpi=300
-)
+        fontsize=18,
 
-mpl.show()
+        color='white',
+
+        pad=20
+
+    )
+
+    # =========================
+    # SAVE IMAGE
+    # =========================
+
+    mpl.savefig(
+
+        f"heatmap_{algorithm}_{vehicle_count}.png",
+
+        dpi=300,
+
+        bbox_inches='tight'
+
+    )
+
+    mpl.show()
 
 
 # =========================
-# GRAPH 4
-# ADAPTIVE REROUTING
+# RESULTS GRAPH FUNCTION
 # =========================
 
-fig, ax = mpl.subplots(figsize=(11, 6))
+def plotResultsGraphs():
 
-ax.plot(
-    data["vehicles"],
-    data["rerouted_vehicles"],
-    marker='o',
-    linewidth=LINE_WIDTH,
-    markersize=MARKER_SIZE,
-    label='Rerouted Vehicles'
-)
+    data = pd.read_csv("results.csv")
 
-ax.set_title(
-    "Adaptive Rerouting Behaviour",
-    fontsize=TITLE_SIZE,
-    pad=15
-)
+    # remove accidental spaces
+    data["algorithm"] = data["algorithm"].str.strip()
 
-ax.set_xlabel(
-    "Number of Vehicles",
-    fontsize=LABEL_SIZE
-)
+    # split algorithms
+    dijkstra_data = data[
+        data["algorithm"] == "dijkstra"
+    ]
 
-ax.set_ylabel(
-    "Vehicles Rerouted",
-    fontsize=LABEL_SIZE
-)
+    astar_data = data[
+        data["algorithm"] == "astar"
+    ]
 
-ax.tick_params(labelsize=TICK_SIZE)
+    # =========================
+    # ALL STANDARD GRAPHS
+    # =========================
 
-ax.grid(True)
+    graphs = [
 
-ax.legend(fontsize=12)
+        (
+            "runtime_seconds",
+            "Runtime Scaling Comparison",
+            "Runtime (seconds)",
+            "runtime_comparison.png"
+        ),
 
-mpl.tight_layout()
+        (
+            "average_edge_usage",
+            "Average Congestion Comparison",
+            "Average Edge Usage",
+            "average_congestion_comparison.png"
+        ),
 
-mpl.savefig(
-    "adaptive_rerouting_behaviour.png",
-    dpi=300
-)
+        (
+            "max_edge_usage",
+            "Maximum Bottleneck Severity",
+            "Maximum Edge Usage",
+            "maximum_bottleneck_comparison.png"
+        ),
 
-mpl.show()
+        (
+            "rerouted_vehicles",
+            "Adaptive Rerouting Behaviour",
+            "Vehicles Rerouted",
+            "adaptive_rerouting_comparison.png"
+        ),
 
+        (
+            "total_travel_cost",
+            "Total Network Travel Cost",
+            "Total Travel Cost",
+            "total_travel_cost_comparison.png"
+        )
+    ]
 
-# =========================
-# GRAPH 5
-# AVERAGE TRAVEL COST
-# =========================
+    # =========================
+    # GENERATE STANDARD GRAPHS
+    # =========================
 
-fig, ax = mpl.subplots(figsize=(11, 6))
+    for metric, title, ylabel, filename in graphs:
 
-ax.plot(
-    data["vehicles"],
-    data["average_travel_cost"],
-    marker='o',
-    linewidth=LINE_WIDTH,
-    markersize=MARKER_SIZE,
-    label='Average Travel Cost'
-)
+        fig, ax = mpl.subplots(figsize=(11, 6))
 
-ax.set_title(
-    "Average Vehicle Travel Cost",
-    fontsize=TITLE_SIZE,
-    pad=15
-)
+        ax.plot(
 
-ax.set_xlabel(
-    "Number of Vehicles",
-    fontsize=LABEL_SIZE
-)
+            dijkstra_data["vehicles"],
+            dijkstra_data[metric],
 
-ax.set_ylabel(
-    "Average Travel Cost",
-    fontsize=LABEL_SIZE
-)
+            marker='o',
+            linewidth=LINE_WIDTH,
+            markersize=MARKER_SIZE,
 
-ax.tick_params(labelsize=TICK_SIZE)
+            label='Dijkstra'
 
-ax.grid(True)
+        )
 
-ax.legend(fontsize=12)
+        ax.plot(
 
-mpl.tight_layout()
+            astar_data["vehicles"],
+            astar_data[metric],
 
-mpl.savefig(
-    "average_vehicle_travel_cost.png",
-    dpi=300
-)
+            marker='o',
+            linewidth=LINE_WIDTH,
+            markersize=MARKER_SIZE,
 
-mpl.show()
+            label='A*'
 
+        )
 
-# =========================
-# GRAPH 6
-# TOTAL NETWORK COST
-# =========================
+        ax.set_title(
+            title,
+            fontsize=TITLE_SIZE,
+            pad=15
+        )
 
-fig, ax = mpl.subplots(figsize=(11, 6))
+        ax.set_xlabel(
+            "Number of Vehicles",
+            fontsize=LABEL_SIZE
+        )
 
-ax.plot(
-    data["vehicles"],
-    data["total_travel_cost"],
-    marker='o',
-    linewidth=LINE_WIDTH,
-    markersize=MARKER_SIZE,
-    label='Total Network Cost'
-)
+        ax.set_ylabel(
+            ylabel,
+            fontsize=LABEL_SIZE
+        )
 
-ax.set_title(
-    "Total Network Travel Cost",
-    fontsize=TITLE_SIZE,
-    pad=15
-)
+        ax.tick_params(
+            labelsize=TICK_SIZE
+        )
 
-ax.set_xlabel(
-    "Number of Vehicles",
-    fontsize=LABEL_SIZE
-)
+        ax.grid(True)
 
-ax.set_ylabel(
-    "Total Travel Cost",
-    fontsize=LABEL_SIZE
-)
+        ax.legend(fontsize=12)
 
-ax.tick_params(labelsize=TICK_SIZE)
+        mpl.tight_layout()
 
-ax.grid(True)
+        mpl.savefig(
+            filename,
+            dpi=300
+        )
 
-ax.legend(fontsize=12)
+        mpl.show()
 
-mpl.tight_layout()
+    # =========================
+    # LOGARITHMIC RUNTIME GRAPH
+    # =========================
 
-mpl.savefig(
-    "total_network_travel_cost.png",
-    dpi=300
-)
+    fig, ax = mpl.subplots(figsize=(11, 6))
 
-mpl.show()
+    ax.plot(
 
+        dijkstra_data["vehicles"],
+        dijkstra_data["runtime_seconds"],
 
-# =========================
-# GRAPH 7
-# CONGESTION DISTRIBUTION
-# =========================
+        marker='o',
+        linewidth=LINE_WIDTH,
+        markersize=MARKER_SIZE,
 
-fig, ax = mpl.subplots(figsize=(12, 7))
+        label='Dijkstra'
 
-bar_width = 0.2
+    )
 
-x = range(len(data["vehicles"]))
+    ax.plot(
 
-ax.bar(
-    [i - bar_width for i in x],
-    data["green_edges"],
-    width=bar_width,
-    label='Low Congestion'
-)
+        astar_data["vehicles"],
+        astar_data["runtime_seconds"],
 
-ax.bar(
-    x,
-    data["yellow_edges"],
-    width=bar_width,
-    label='Moderate Congestion'
-)
+        marker='o',
+        linewidth=LINE_WIDTH,
+        markersize=MARKER_SIZE,
 
-ax.bar(
-    [i + bar_width for i in x],
-    data["red_edges"],
-    width=bar_width,
-    label='Heavy Congestion'
-)
+        label='A*'
 
-ax.set_title(
-    "Congestion Distribution Across Vehicle Loads",
-    fontsize=TITLE_SIZE,
-    pad=15
-)
+    )
 
-ax.set_xlabel(
-    "Simulation Run",
-    fontsize=LABEL_SIZE
-)
+    # logarithmic scale
+    ax.set_xscale('log')
 
-ax.set_ylabel(
-    "Number of Edges",
-    fontsize=LABEL_SIZE
-)
+    ax.set_title(
+        "Logarithmic Runtime Scaling",
+        fontsize=TITLE_SIZE,
+        pad=15
+    )
 
-ax.set_xticks(list(x))
+    ax.set_xlabel(
+        "Number of Vehicles (log scale)",
+        fontsize=LABEL_SIZE
+    )
 
-ax.set_xticklabels(data["vehicles"])
+    ax.set_ylabel(
+        "Runtime (seconds)",
+        fontsize=LABEL_SIZE
+    )
 
-ax.tick_params(labelsize=TICK_SIZE)
+    ax.tick_params(
+        labelsize=TICK_SIZE
+    )
 
-ax.legend(fontsize=12)
+    ax.grid(True)
 
-ax.grid(True)
+    ax.legend(fontsize=12)
 
-mpl.tight_layout()
+    mpl.tight_layout()
 
-mpl.savefig(
-    "congestion_distribution.png",
-    dpi=300
-)
+    mpl.savefig(
+        "logarithmic_runtime_scaling.png",
+        dpi=300
+    )
 
-mpl.show()
+    mpl.show()
+
+    print("\n===== VISUALISATION COMPLETE =====")
 
 
 # =========================
-# GRAPH 8
-# LOGARITHMIC RUNTIME
+# RUN VISUALISATIONS
 # =========================
 
-fig, ax = mpl.subplots(figsize=(11, 6))
+if __name__ == "__main__":
 
-ax.plot(
-    data["vehicles"],
-    data["runtime_seconds"],
-    marker='o',
-    linewidth=LINE_WIDTH,
-    markersize=MARKER_SIZE
-)
-
-ax.set_xscale('log')
-
-ax.set_title(
-    "Logarithmic Runtime Scaling",
-    fontsize=TITLE_SIZE,
-    pad=15
-)
-
-ax.set_xlabel(
-    "Number of Vehicles (log scale)",
-    fontsize=LABEL_SIZE
-)
-
-ax.set_ylabel(
-    "Runtime (seconds)",
-    fontsize=LABEL_SIZE
-)
-
-ax.tick_params(labelsize=TICK_SIZE)
-
-ax.grid(True)
-
-mpl.tight_layout()
-
-mpl.savefig(
-    "logarithmic_runtime_scaling.png",
-    dpi=300
-)
-
-mpl.show()
-
-
-# =========================
-# FINAL SUMMARY
-# =========================
-
-print("\n===== VISUALISATION COMPLETE =====")
-print("Saved all figures as high-quality PNG files.")
+    plotResultsGraphs()

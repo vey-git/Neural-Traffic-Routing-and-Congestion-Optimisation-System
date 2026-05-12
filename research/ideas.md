@@ -141,3 +141,6 @@ Importing pandas to visualise well based on our outputted csv
 Implementation of A* algorithm, 
 Implement heuristic function within the vehicle class so it can either call the A* or Dijkstras shortest path "nx"
 
+Comparing the efficacy of the newly implemented A*, ive reran the following vehicles with each algorithm. 10,25,50,75,100, 200, 500, 1000
+
+Perfectly implemented: Run visualisation.py to see all the graph comparisons, and run main.py to compare the models and show heatmap of congestion

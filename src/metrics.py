@@ -215,6 +215,7 @@ def exportResultsCSV(results):
 
             writer.writerow([
                 "vehicles",
+                "algorithm",
                 "rerouting",
                 "average_edge_usage",
                 "max_edge_usage",
