@@ -67,3 +67,56 @@ Severe congestion
 2.5x
 
 we have an average, if the edge/road is less than the average it stays at the baseline speed as it wont speed up the route
+
+Visual update
+:implement a heatmap for roads 
+
+With the newly updated congestion weighting we would expect the vehicles to take alternate paths if they pass through a heavily weighted edge. In theory there should be more green lanes compared to reds vs the first vehicle routing path.
+
+To test whether our vehicles are updating based on the weights, i am going to comment out the code for rerouting, run the program with 25 vehicles initially and then stress test on 250. then add the rerouting code back and run the same amount of vehicles and see if the graph has any changes
+From first run without rerouting: "some red congestion with a fair few yellow congestions but still mainly green".
+2nd run: issue with implementation, the computational power needed grew exponentially, and i needed to end the program as it was not efficient.
+Issue: recalculating the route for every vehicle each time it loops which meant for a huge overhead in computational power
+Fix: calculate all vehicles, then reroute them all.
+
+Updated: First run on 25 vehicles: completed almost instantaneously with a few yellow routes but no red.
+
+2nd run on 250 vehicles (non rerouting): completed quickly, some red and yellow congestion
+
+3rd run with rerouting (25 vehicles): 1 or 2 yellow pathways
+
+4th run with rerouting (250 vehicles): not expected but there is more congestion in certain areas, more red and yellow 
+
+Found an issue "edge = (route[1], route[i+1])" where route[1] should be route[i] which creates a bottleneck
+
+Secondary issue is the loop is still in the wrong area, i moved it but not far enough out of the loop
+
+Changes in code to fix all these issues: moved congestion logic outside of the vehicle "for loop", added a base_travel_time as previous weight calculation exploded exponentially which could provide instability when calculating reroutes, rerouting now only happens once.
+
+Test1: Run without reroute on 250 vehicles: ran instantaneous, huge pathways of red and yellow congestion, means the weighting was the issue. average edge usage is 4.379789631855748
+
+Test2: Run with reroute on 250 vehicles: similar congestion with a score of: 4.379789631855748
+
+both edge usage for with and without reroute are similar, which makes me think there is a bug. 
+issue is that the output is still on the non rerouting vehicles, the plot stays the same and doesnt update, meaning the reroute does occur however we can visually see the change. Fix: update the plot and reset edge usage and update with the new edge usage 
+
+Test to see if the routes are the same with and without rerouting on 5 vehicles:
+Routes are the exact same with and without the routing so there is an issue "                 #debug for routes
+                print(f"Route: {vehicle.route}")" this was the debug. Going to try and alter the multiplier on weights
+
+Added debugging outputs which allowed me to see the code works with a change of "for key in edge_data:" instead of first_key = list(edge_data.keys())[0] when recalculating using the Digraph
+
+Retesting with 250 vehicles: out of 250, 51 of them changed their routes with an average edge usage of 5.095901313171508
+25: Vehicles with changed routes: 5
+
+Average Edge Usage AFTER: 1.4023809523809523
+50: Vehicles with changed routes: 9
+
+Average Edge Usage AFTER: 1.8960720130932898
+100:Vehicles with changed routes: 15
+
+Average Edge Usage AFTER: 3.187732342007435
+
+There is still congestion as these weights wont completely negate congestion, the vehicles are only determining what the shortest path from their current node is, in theory many of the vehicles will have the same shortest path, we can see this in the figure where most congestion comes from routes that have no alternatives, for example a long highway.
+
+This highlights that obtaining the shortest path for each vehicle is insufficient as a singular algorithm to mitigate congestion

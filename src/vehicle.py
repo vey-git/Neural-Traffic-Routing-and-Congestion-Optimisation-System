@@ -21,5 +21,14 @@ class Vehicle:
             weight='travel_time'
         )
 
+
     def get_route(self):
         return self.route
+
+    def recalculateRoute(self):
+        self.route = nx.shortest_path(
+            self.graph,
+            self.current_node,
+            self.goal_node,
+            weight='travel_time'
+        )
