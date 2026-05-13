@@ -22,6 +22,14 @@ X = data[['edge_usage',
 
 y=data[['multiplier']].values
 
+split_index = int(len(X) * 0.8)
+
+X_train = X[:split_index]
+X_test = X[split_index:]
+
+y_train = y[:split_index]
+y_test = y[split_index:]
+
 #normalisation
 X = (X - X.mean(axis=0)) / X.std(axis=0)
 
@@ -36,7 +44,15 @@ model = NeuralNetwork(
 
 #train the model
 
-model.train(X, y, epochs=5000, learning_rate=0.001)
+model.train(
+
+    X_train,
+    y_train,
+
+    epochs=5000,
+
+    learning_rate=0.001
+)
 
 #test prediction
 
@@ -50,29 +66,28 @@ sample = np.array([[
 
 sample = (sample - X.mean(axis=0)) / X.std(axis=0)
 
-prediction = model.predict(sample)
+prediction = model.predict(X_test)
 print("\nPredicted Congestion Multiplier: ")
 print(prediction)
 
 #MSE
-actual_value = np.array([[1.5]])
-sampleVsPrediction = (actual_value -prediction)**2  #get the squared differences between the exact, and predicted output
+sampleVsPrediction = (y_test -prediction)**2  #get the squared differences between the exact, and predicted output
 MSE = np.mean(sampleVsPrediction)
 
 #RMSE
-RMSE = sqrt(MSE)
+RMSE = np.sqrt(MSE)
 
 #MAE
 sum = 0
 
-for i in range (len(actual_value)):
-    sum += abs(actual_value[i]-prediction[i])
+for i in range (len(y_test)):
+    sum += abs(y_test[i]-prediction[i])
 
-MAE = sum / len(actual_value)
+MAE = sum / len(y_test)
 
 
-print(f"\nMSE= {MSE}")
-print(f"\nRMSE= {RMSE}")
+print(f"\nMSE= [{MSE}]")
+print(f"\nRMSE= [{RMSE}]")
 print(f"\nMAE= {MAE}")
 
 #plot losses compared to model
