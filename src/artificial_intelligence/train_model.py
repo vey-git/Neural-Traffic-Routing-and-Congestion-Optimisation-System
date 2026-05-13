@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from shapely import predicates
 
 from neural_network import NeuralNetwork
 
@@ -32,3 +33,19 @@ model = NeuralNetwork(
 #train the model
 
 model.train(X, y, epochs=5000, learning_rate=0.001)
+
+#test prediction
+
+sample = np.array([[
+    10, #edge_usage
+    100, #road_length
+    50, #road_speed
+    8, #nearby_congestion
+    2 #road_type
+]])
+
+sample = (sample - X.mean(axis=0)) / X.std(axis=0)
+
+prediction = model.predict(sample)
+print("\nPredicted Congestion Multiplier: ")
+print(prediction)
