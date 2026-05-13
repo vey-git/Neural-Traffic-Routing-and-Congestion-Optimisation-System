@@ -1,6 +1,10 @@
+from logging import root
+from math import sqrt
+
 import pandas as pd
 import numpy as np
-from shapely import predicates
+import matplotlib.pyplot as plt
+from numpy.ma.extras import average
 
 from neural_network import NeuralNetwork
 
@@ -49,3 +53,33 @@ sample = (sample - X.mean(axis=0)) / X.std(axis=0)
 prediction = model.predict(sample)
 print("\nPredicted Congestion Multiplier: ")
 print(prediction)
+
+#MSE
+actual_value = np.array([[1.5]])
+sampleVsPrediction = (actual_value -prediction)**2  #get the squared differences between the exact, and predicted output
+MSE = np.mean(sampleVsPrediction)
+
+#RMSE
+RMSE = sqrt(MSE)
+
+#MAE
+sum = 0
+
+for i in range (len(actual_value)):
+    sum += abs(actual_value[i]-prediction[i])
+
+MAE = sum / len(actual_value)
+
+
+print(f"\nMSE= {MSE}")
+print(f"\nRMSE= {RMSE}")
+print(f"\nMAE= {MAE}")
+
+#plot losses compared to model
+
+plt.plot(model.losses)
+plt.title("Training Loss")
+plt.xlabel("Epoch")
+plt.ylabel("MSE Loss")
+plt.grid(True)
+plt.show()

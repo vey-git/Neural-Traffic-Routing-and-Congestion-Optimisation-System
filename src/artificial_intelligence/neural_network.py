@@ -108,12 +108,13 @@ class NeuralNetwork:
     # =========================
 
     def train(self, X, y, epochs, learning_rate):
-
+        self.losses = [] #list of epoch loss values
         for epoch in range(epochs):
 
             predictions = self.forward(X)
 
             loss = self.compute_loss(y, predictions)
+            self.losses.append(loss)
 
             self.backward(X, y, learning_rate)
 

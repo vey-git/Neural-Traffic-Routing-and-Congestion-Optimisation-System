@@ -141,3 +141,28 @@ supports supervised learning
 
 integrates naturally with routing metrics
 
+Types of evaluations
+
+Chicco, D., Warrens, M.J. and Jurman, G. (2021). The Coefficient of Determination R-squared Is More Informative than SMAPE, MAE, MAPE, MSE and RMSE in Regression Analysis Evaluation. PeerJ Computer Science, [online] 7(5), p.e623. doi:https://doi.org/10.7717/peerj-cs.623.
+‌
+
+MSE = best value is 0, can be used if there are outliers that need to be detected, if the model finds a significant outlier, then the square function highlights this accordingly. this is important for our metrics as we are able to determine what sort of routes are causing issues, and where most traffic is being funneled towards
+ 
+n
+1
+​	
+ ∑ 
+i=1
+n
+​	
+ (Y 
+i
+​	
+ − 
+Y
+^
+  
+i
+​	
+ ) 
+2
