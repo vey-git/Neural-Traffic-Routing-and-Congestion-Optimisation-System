@@ -1,10 +1,10 @@
+from cProfile import label
 from logging import root
 from math import sqrt
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.ma.extras import average
 
 from neural_network import NeuralNetwork
 
@@ -91,10 +91,20 @@ print(f"\nRMSE= [{RMSE}]")
 print(f"\nMAE= {MAE}")
 
 #plot losses compared to model
-
 plt.plot(model.losses)
 plt.title("Training Loss")
 plt.xlabel("Epoch")
 plt.ylabel("MSE Loss")
 plt.grid(True)
+plt.show()
+
+#plot actual vs predicted values
+
+plt.plot(y_test, label="Actual")
+plt.plot(prediction, label="Predicted")
+plt.title("Actual vs Predicted")
+plt.xlabel("Sample")
+plt.ylabel("Congestion Multiplier")
+plt.grid(True)
+plt.legend()
 plt.show()
