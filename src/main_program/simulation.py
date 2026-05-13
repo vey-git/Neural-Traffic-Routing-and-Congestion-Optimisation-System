@@ -8,6 +8,7 @@ from graph import createGraph
 from src.main_program.visualisation import (
     plotCongestionHeatmap
 )
+from metrics import exportTrainingData
 
 from metrics import (
 
@@ -295,9 +296,17 @@ def runSimulation(
         f"Red Edges: {congestion_after['red']}"
     )
 
+
     # =========================
     # EXPORT RESULTS
     # =========================
+
+    exportTrainingData(
+        G,
+        edge_count_after,
+        average_after
+    )
+
 
     exportResultsCSV([
 

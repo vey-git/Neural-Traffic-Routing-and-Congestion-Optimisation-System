@@ -230,3 +230,91 @@ def exportResultsCSV(results):
             ])
 
         writer.writerow(results)
+
+def exportTrainingData(
+
+                G,
+
+                edge_count,
+
+                average_edge_usage
+
+        ):
+
+            with open("../artificial_intelligence/training_data.csv", "a", newline="") as file:
+
+                writer = csv.writer(file)
+
+                for u, v, key, data in G.edges(keys=True, data=True):
+
+                    usage = edge_count.get((u, v), 0)
+
+                    road_length = data.get("length", 0)
+                    speed_limit = data.get("speed_kph", 30)
+
+                    if isinstance(speed_limit, list):
+                        speed_limit = speed_limit[0]
+
+                    road_type = data.get("highway", "residential")
+
+                    if isinstance(road_type, list):
+                        road_type = road_type[0]
+
+                    road_mapping = {
+
+                        "motorway": 0,
+
+                        "trunk": 1,
+
+                        "primary": 2,
+
+                        "secondary": 3,
+
+                        "tertiary": 4,
+
+                        "residential": 5
+
+                    }
+
+                    road_type_encoded = road_mapping.get(
+
+                        road_type,
+
+                        5
+
+                    )
+
+                    if usage < average_edge_usage * 0.5:
+
+                        multiplier = 1.0
+
+                    elif usage < average_edge_usage:
+
+                        multiplier = 1.5
+
+                    elif usage < average_edge_usage * 1.5:
+
+                        multiplier = 2.0
+
+                    else:
+
+                        multiplier = 3.0
+
+
+                    nearby_congestion = usage
+
+                    writer.writerow([
+
+                        usage,
+
+                        road_length,
+
+                        speed_limit,
+
+                        nearby_congestion,
+
+                        road_type_encoded,
+
+                        multiplier
+
+                    ])

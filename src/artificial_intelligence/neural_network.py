@@ -1,8 +1,14 @@
 import numpy as np
 
+
 class NeuralNetwork:
+
     def __init__(self, input_size, hidden1_size, hidden2_size, output_size):
-        #initialise the weights of the neurons
+
+        # =========================
+        # INITIALISE WEIGHTS
+        # =========================
+
         self.W1 = np.random.randn(input_size, hidden1_size) * 0.01
         self.b1 = np.zeros((1, hidden1_size))
 
@@ -12,84 +18,113 @@ class NeuralNetwork:
         self.W3 = np.random.randn(hidden2_size, output_size) * 0.01
         self.b3 = np.zeros((1, output_size))
 
-        #relu activation
+    # =========================
+    # RELU ACTIVATION
+    # =========================
 
-        def relu(self, x):
-            return np.maximum(0, x)
+    def relu(self, x):
 
-        #relu derivative
+        return np.maximum(0, x)
 
-        def relu_derivative(self,x):
-            return (x > 0).astype(float)
+    # =========================
+    # RELU DERIVATIVE
+    # =========================
 
-        #forward propagation
+    def relu_derivative(self, x):
 
-        def forward(self,X):
-            self.z1 = np.dot(X,self.W1) + self.b1
-            self.a1 = self.relu(self.z1)
+        return (x > 0).astype(float)
 
-            self.z2 = np.dot(X, self.W2) + self.b2
-            self.a2 = self.relu(self.z2)
+    # =========================
+    # FORWARD PROPAGATION
+    # =========================
 
-            self.z3 = np.dot(X, self.W3) + self.b3
+    def forward(self, X):
 
-            #output for linear regression
-            self.output = self.z3
-            return self.output
+        self.z1 = np.dot(X, self.W1) + self.b1
+        self.a1 = self.relu(self.z1)
 
-        #loss function
+        self.z2 = np.dot(self.a1, self.W2) + self.b2
+        self.a2 = self.relu(self.z2)
 
-        def compute_loss(self, y_true, y_pred):
-            return np.mean((y_true - y_pred) ** 2)
+        self.z3 = np.dot(self.a2, self.W3) + self.b3
 
-        #backpropagation
+        # linear output for regression
+        self.output = self.z3
 
-        def backward(self, X, y, learning_rate):
-            m = X.shape[0]
+        return self.output
 
-            #output the layer gradient
-            d_output = (2 / m) * (self.output - y)
+    # =========================
+    # LOSS FUNCTION
+    # =========================
 
-            #gradients for W3 and b3
-            dW3 = np.dot(self.a2.T, d_output)
-            db3 = np.sum(d_output, axis=0, keepdims=True)
+    def compute_loss(self, y_true, y_pred):
 
-            #hidden layer 2
-            dA2 = np.dot(d_output, self.W3.T)
-            dZ2 = dA2 * self.relu_derivative(self.z2)
+        return np.mean((y_true - y_pred) ** 2)
 
-            dW2 = np.dot(self.a1.T, dZ2)
-            db2 = np.sum(dZ2, axis=0, keepdims=True)
+    # =========================
+    # BACKPROPAGATION
+    # =========================
 
-            #hidden layer 1
-            dA1 = np.dot(dZ2, self.W2.T)
-            dZ1 = dA1 * self.relu_derivative(self.z1)
+    def backward(self, X, y, learning_rate):
 
-            dW1 = np.dot(X.T, dZ1)
-            db1 = np.sum(dZ1, axis=0, keepdims=True)
+        m = X.shape[0]
 
-            #gradient descent
+        # output layer gradient
+        d_output = (2 / m) * (self.output - y)
 
-            self.W3 -= learning_rate * dW3
-            self.b3 -= learning_rate * db3
+        # gradients for W3 and b3
+        dW3 = np.dot(self.a2.T, d_output)
+        db3 = np.sum(d_output, axis=0, keepdims=True)
 
-            self.W2 -= learning_rate * dW2
-            self.b2 -= learning_rate * db2
+        # hidden layer 2
+        dA2 = np.dot(d_output, self.W3.T)
+        dZ2 = dA2 * self.relu_derivative(self.z2)
 
-            self.W1 -= learning_rate * dW1
-            self.b1 -= learning_rate * db1
+        dW2 = np.dot(self.a1.T, dZ2)
+        db2 = np.sum(dZ2, axis=0, keepdims=True)
 
-            #Training loop
-            def train(self, X, y, epochs, learning_rate):
-                for epoch in range(epochs):
-                    predictions = self.forward(X)
-                    loss = self.compute_loss(y, predictions)
-                    self.backward(X,y,learning_rate)
+        # hidden layer 1
+        dA1 = np.dot(dZ2, self.W2.T)
+        dZ1 = dA1 * self.relu_derivative(self.z1)
 
-                    if epoch % 100 == 0:
-                        print(f"Epoch {epoch} | Loss: {loss}")
+        dW1 = np.dot(X.T, dZ1)
+        db1 = np.sum(dZ1, axis=0, keepdims=True)
 
-            #prediction
+        # =========================
+        # GRADIENT DESCENT UPDATE
+        # =========================
 
-            def predict(self, X):
-                return self.forward(X)
+        self.W3 -= learning_rate * dW3
+        self.b3 -= learning_rate * db3
+
+        self.W2 -= learning_rate * dW2
+        self.b2 -= learning_rate * db2
+
+        self.W1 -= learning_rate * dW1
+        self.b1 -= learning_rate * db1
+
+    # =========================
+    # TRAINING LOOP
+    # =========================
+
+    def train(self, X, y, epochs, learning_rate):
+
+        for epoch in range(epochs):
+
+            predictions = self.forward(X)
+
+            loss = self.compute_loss(y, predictions)
+
+            self.backward(X, y, learning_rate)
+
+            if epoch % 100 == 0:
+
+                print(f"Epoch {epoch} | Loss: {loss}")
+
+    # =========================
+    # PREDICTION
+    # =========================
+
+    def predict(self, X):
+
+        return self.forward(X)
