@@ -5,7 +5,7 @@ import time
 from vehicle import Vehicle
 from graph import createGraph
 
-from src.visualisation import (
+from src.main_program.visualisation import (
     plotCongestionHeatmap
 )
 

@@ -144,3 +144,59 @@ Implement heuristic function within the vehicle class so it can either call the 
 Comparing the efficacy of the newly implemented A*, ive reran the following vehicles with each algorithm. 10,25,50,75,100, 200, 500, 1000
 
 Perfectly implemented: Run visualisation.py to see all the graph comparisons, and run main.py to compare the models and show heatmap of congestion
+
+Implementation of neural network:
+FEEDFORWARD ARCHITECTURE
+
+the network will predict either congestion multipliers, or predicted travel time from our road/traffic features.
+
+input features: edge_usage, road_length, speed_limit, nearby_congestion, road_type
+
+input layer -> hidden layer -> hidden layer 2 -> output layer
+
+where the output neuron predicts either of the options above.
+
+Mathematical insights for forward propagation:
+
+each neuron will compute $$
+z = Wx + b
+$$
+
+where:
+
+W is the weight matrix
+
+x is the input vector
+
+b is the bias vector
+
+z is the weighted sum
+
+next implementation is a ReLU activation
+whicj introduces non-linearity into the network which makes it more reliable under uncertain relationships for larger scale networks such as our road congestion model.
+$$
+ReLU(x) = \max(0, x)
+$$
+
+output layer will remain linear as this is a regression problem
+
+Implementation of mean squared error (MSE)
+$$
+L = \frac{1}{n}\sum(y - \hat{y})^2
+$$
+
+where:
+
+y is the true congestion value
+
+y^ is the predicted value 
+
+Gradient descent:
+
+weights are updated using
+$$
+W := W - \eta \frac{\partial L}{\partial W}
+$$
+
+where n is the learning rate,
+and the other is the gradient.

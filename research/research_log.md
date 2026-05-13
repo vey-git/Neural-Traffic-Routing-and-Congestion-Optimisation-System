@@ -84,3 +84,60 @@ Mathematical component of A* f(n)=g(n)+h(n) Where:
 
 * g(n) = current path cost,
 * h(n) = estimated remaining cost.
+
+Neural networks -> Basic neuron structure = left weights, determine right neuron, the higher the weight the higher the activation. Right most neuron is the output of the network,
+
+Types of models: Hopfield model is an additive model where the individual weights of the neurons are totaled to find the activation of the final neuron. Uses a fully interconnected network of neuron to descend onto an energy function. $E = -\frac{1}{2}\sum_{i,j} w_{ij} x_i x_j + \sum_i \theta_i x_i$ : T ( i , j )are the interconnection weights,I ( i )are the input biases,U(i)are the internal states,V(i)are the neuron outputs, andg(x)is a nonlinear activation function which can be taken asg(x)=-1+tanh-[13
+
+Gilmore, J. F. and Abe, N. (1995) ‘NEURAL NETWORK MODELS FOR TRAFFIC CONTROL AND CONGESTION PREDICTION’, I V H S Journal, 2(3), pp. 231–252. doi: 10.1080/10248079508903828.
+https://www.tandfonline.com/doi/abs/10.1080/10248079508903828?casa_token=k1WuWLrjCo0AAAAA:f9TTeB7kdwYhbkiNxnqxcv8_V2tCR4ghdGcoWAtOsFiFxxghODuzvKzFbws6esaKIZ8THRjv
+
+The reason this model would be good for this project, is we would be able to total the number of congested roads compared to our current location, and also total the number of cars within a certain viscinity which could alter the path our newly formed neural network parses to our vehicles.
+Asynchronised update rule is implemented which periodically changes a randoms neurons weight until it matches the result we are looking for, in this case: less congested roads/pathways
+
+Hopfield networks are attractive for congestion optimisation due to its energy restriction behaviour, which conceptually aligns with reducing the total network congestion. However, their recurrent fully-connected structure may scale poorly for large urban traffic systems and could be less suitable for supervised travel-time regression compared to the later model explained in this research log
+Arulampalam, G. and Bouzerdoum, A. (2003). A generalized feedforward neural network architecture for classification and regression. Neural Networks, 16(5-6), pp.561–568. doi:https://doi.org/10.1016/s0893-6080(03)00116-3.
+‌
+
+Feedforward neural network model:
+
+used by a non-linear differential equation by shunting a portion of the signal. Shunting inhibition: reducing the number of operations/neurons passed while maintaining efficacy
+
+each neuron used by the differential equation is described by the following:
+
+$\frac{dx_j}{dt} = I_j - a_j x_j - f \sum_i c_{ji} x_i x_j + b_j$
+
+where xj represents the activity of the current neuron, Ij is the input of the jth neuron. aj is the passive decay rate of the neuron. cji is the connection weight from the ith input to the jth neuron. bj represents the bias and f is an activation function.
+
+in a feedforward model, both the excitatory and inhibitory influences are mediated by the external inputs.
+ xi term in the previous equation is replaced by Ij 
+
+$\frac{dx_j}{dt} = I_j - a_j x_j - f \sum_i c_{ji} I_i x_j + b_j$
+
+the static shunting neruon is derived from the steady-state solution of the previous equation. the state of the static shunting neuron is given by:
+
+$x_j = I_j + b_j a_j + f \sum_i c_{ji} I_i + c_{jo}$
+
+The number of neurons in a network is dependant on the size of the dataset. The number of neurons in the shunting layer(s) is determined by the number of data attributes, whereas the number of neurons in the output layer is determined by the number of class labels. This is by using the basic SIAAN structure. Downside is that it is too restrictive although removed the need to find an optimal network structure.
+
+Generalised shunting neuron model:
+
+this has excitatory inputs summed and passed through an activation function with a perceptron neuron. G. Arulampalam, A. Bouzerdoum
+Expanding the structure of shunting inhibitory artificial neural network classifiers
+Proceedings of the International Joint Conference on Neural Networks (IJCNN 2002), Honolulu, USA (2002), pp. 2855-2860
+
+This new model combines perceptron neuron model with the shunting neuron model as described earlier. The output can be described as:
+
+$x_j = g \sum_i w_{ji} I_i + w_{j0} + b_j a_j + f \sum_i c_{ji} I_i + c_{j0}$
+where wjj=1 and all other weights wji are 0, g is the linear activation function. The perceptron model is a special case of the GSN, where the demoninator weights c are fixed at 0 and a is set to a constant in order to make the denominator equal to 1 depending on the activation function.
+
+Reasons the feedforward implementation is the best for our neutral network:
+
+feasible from scratch
+
+fits within our trained data appropriately, taking use of all fields
+
+supports supervised learning
+
+integrates naturally with routing metrics
+
