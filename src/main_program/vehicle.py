@@ -26,6 +26,8 @@ class Vehicle:
         # selected routing algorithm
         self.algorithm = algorithm
 
+        self.nodes_explored = 0
+
         # =========================
         # INITIAL ROUTE
         # =========================
@@ -43,6 +45,7 @@ class Vehicle:
                 weight='travel_time'
 
             )
+            self.nodes_explored = len(self.route)
 
         elif self.algorithm == "astar":
 
@@ -59,6 +62,7 @@ class Vehicle:
                 weight='travel_time'
 
             )
+            self.nodes_explored = len(self.route)
 
         else:
 
@@ -93,6 +97,7 @@ class Vehicle:
                 weight='travel_time'
 
             )
+            self.nodes_explored = len(self.route)
 
         elif self.algorithm == "astar":
 
@@ -107,8 +112,8 @@ class Vehicle:
                 heuristic=self.heuristic,
 
                 weight='travel_time'
-
             )
+            self.nodes_explored = len(self.route)
 
     # =========================
     # HEURISTIC FUNCTION

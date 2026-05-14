@@ -200,3 +200,42 @@ $$
 
 where n is the learning rate,
 and the other is the gradient.
+
+  warnings.warn(
+Traceback (most recent call last):
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/main_program/main.py", line 1, in <module>
+    from simulation import runSimulation
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/main_program/simulation.py", line 11, in <module>
+    from metrics import exportTrainingData
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/main_program/metrics.py", line 5, in <module>
+    from src.artificial_intelligence.train_model import prediction
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/artificial_intelligence/train_model.py", line 9, in <module>
+    from neural_network import NeuralNetwork
+ModuleNotFoundError: No module named 'neural_network'
+
+error when trying to run the program with the newly added neural network for congestion 
+
+another error: Traceback (most recent call last):
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/main_program/main.py", line 11, in <module>
+    runSimulation(num_of_vehicles, algorithm)
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/main_program/simulation.py", line 304, in runSimulation
+    exportTrainingData(
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/main_program/metrics.py", line 297, in exportTrainingData
+    multipler = predictCongestion(features)
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/artificial_intelligence/congestion_model.py", line 30, in predictCongestion
+    prediction = model.predict(sample)
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/artificial_intelligence/neural_network.py", line 153, in predict
+    return self.forward(X)
+  File "/Users/harvey/PycharmProjects/Neural-Traffic-Routing-and-Congestion-Optimisation-System/src/artificial_intelligence/neural_network.py", line 43, in forward
+    self.z1 = np.dot(X, self.W1) + self.b1
+ValueError: shapes (1,1,4) and (5,16) not aligned: 4 (dim 2) != 5 (dim 0)
+
+as it expects more inputs
+fix: replace sample = np.array([[features]]) with sample = np.array([features]) and updated                     features= [[
+                                usage,
+                                road_length,
+                                speed_limit,
+                                nearby_congestion,
+                                road_type_encoded
+                    ]]
+ to include usage at the top. UPDATE: WORKING

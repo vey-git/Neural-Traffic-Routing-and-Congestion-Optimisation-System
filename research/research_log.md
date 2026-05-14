@@ -1,5 +1,8 @@
 research notes:
 
+background thesis-> many people dislike congestion as it is an irritant causing their personal schedules to be out of their control, it is a financial loss in some cases where people may not be able to make it to work and the cost of fuel, especially in this economy for standstill traffic. --> traffic congestion means that there are more vehicles trying to use a given road than it can handle without exceeding levels of delay or inconvenience. Occurs certain times of the day in major cites and this is called "peak periods" or "rush hours"
+
+
 mathematical background of the strongest classical representation of routing and pathfinding is Dijkstras algorithm "A* has become a common option for researchers attempting to solve pathfinding problems" --> Foead, D., Ghifari, A., Kusuma, M.B., Hanafiah, N. and Gunawan, E. (2021). A Systematic Literature Review of A* Pathfinding. Procedia Computer Science, 179, pp.507–514. doi:https://doi.org/10.1016/j.procs.2021.01.034.
 ‌ 
 Math representation is 𝑓(𝑛)=𝑔(𝑛)+ℎ(𝑛) where g(n) is the cost from the start node to "n", where h(n) is the estimated cost from "n" to the goal.
@@ -166,3 +169,6 @@ i
 ​	
  ) 
 2
+
+What is a ANN? computations of a brain are done by a highly interconnected network of neurons, which communicate by sending electric pulses through the neural wiring which consists of axons, synapses and dendrites : Krogh, A. What are artificial neural networks?. Nat Biotechnol 26, 195–197 (2008). https://doi.org/10.1038/nbt1386
+they can be created by simulating a network of model neurons in a computer. Applying algorihtms that mimic the processes of real neurons we can make a network "learn" to solve many types of problems. A neuron is referred to as a threshold unit and recieves an input from a number of other units or external sources, weighs each input and then sums them. If the total input is above a threshold then the output of a unit is a 1 else a 0

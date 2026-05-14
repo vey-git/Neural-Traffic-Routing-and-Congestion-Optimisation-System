@@ -132,7 +132,49 @@ def plotCongestionHeatmap(
     # =========================
     # SAVE IMAGE
     # =========================
+    from matplotlib.lines import Line2D
 
+    legend_elements = [
+
+        Line2D(
+            [0],
+            [0],
+            color='lime',
+            lw=4,
+            label='Low Congestion'
+        ),
+
+        Line2D(
+            [0],
+            [0],
+            color='yellow',
+            lw=4,
+            label='Moderate Congestion'
+        ),
+
+        Line2D(
+            [0],
+            [0],
+            color='orange',
+            lw=4,
+            label='High Congestion'
+        ),
+
+        Line2D(
+            [0],
+            [0],
+            color='red',
+            lw=4,
+            label='Severe Congestion'
+        )
+
+    ]
+
+    ax.legend(
+        handles=legend_elements,
+        loc='lower left',
+        fontsize=10
+    )
     mpl.savefig(
 
         f"heatmap_{algorithm}_{vehicle_count}.png",

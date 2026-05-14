@@ -1,26 +1,38 @@
-from cProfile import label
-from logging import root
-from math import sqrt
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from neural_network import NeuralNetwork
+from src.artificial_intelligence.neural_network import NeuralNetwork
+
+# =========================================================
+# LOAD DATA
+# =========================================================
+
+print("Loading dataset...")
 
 data = pd.read_csv("training_data.csv")
 
+# =========================================================
+# INPUT FEATURES
+# =========================================================
 
-#input features
 X = data[['edge_usage',
           'road_length',
           'speed_limit',
           'nearby_congestion',
           'road_type']].values
 
-#output
+# OUTPUT TARGET
 
-y=data[['multiplier']].values
+y = data[['multiplier']].values
+
+print("Dataset loaded successfully")
+print("X shape:", X.shape)
+print("y shape:", y.shape)
+
+# =========================================================
+# TRAIN / TEST SPLIT
+# =========================================================
 
 split_index = int(len(X) * 0.8)
 
@@ -30,10 +42,25 @@ X_test = X[split_index:]
 y_train = y[:split_index]
 y_test = y[split_index:]
 
-#normalisation
-X = (X - X.mean(axis=0)) / X.std(axis=0)
+# =========================================================
+# NORMALISATION
+# =========================================================
 
-#create network
+X_mean = X_train.mean(axis=0)
+X_std = X_train.std(axis=0)
+
+# prevent divide-by-zero
+
+X_std[X_std == 0] = 1
+
+X_train = (X_train - X_mean) / X_std
+X_test = (X_test - X_mean) / X_std
+
+print("Normalisation complete")
+
+# =========================================================
+# CREATE NETWORK
+# =========================================================
 
 model = NeuralNetwork(
     input_size=5,
@@ -42,69 +69,121 @@ model = NeuralNetwork(
     output_size=1
 )
 
-#train the model
+print("Neural network created")
+
+# =========================================================
+# TRAIN MODEL
+# =========================================================
+
+print("Starting training...")
 
 model.train(
-
     X_train,
     y_train,
-
-    epochs=5000,
-
-    learning_rate=0.001
+    epochs=1000,
+    learning_rate=0.0001
 )
 
-#test prediction
+print("Training complete")
 
-sample = np.array([[
-    10, #edge_usage
-    100, #road_length
-    50, #road_speed
-    8, #nearby_congestion
-    2 #road_type
-]])
+# =========================================================
+# SAVE MODEL
+# =========================================================
 
-sample = (sample - X.mean(axis=0)) / X.std(axis=0)
+model.save_model()
+
+print("Model saved")
+
+# =========================================================
+# PREDICTIONS
+# =========================================================
 
 prediction = model.predict(X_test)
-print("\nPredicted Congestion Multiplier: ")
-print(prediction)
 
-#MSE
-sampleVsPrediction = (y_test -prediction)**2  #get the squared differences between the exact, and predicted output
-MSE = np.mean(sampleVsPrediction)
+print("Predictions generated")
 
-#RMSE
-RMSE = np.sqrt(MSE)
+# =========================================================
+# FLATTEN ARRAYS
+# =========================================================
 
-#MAE
-sum = 0
+y_test = np.array(y_test).flatten()
+prediction = np.array(prediction).flatten()
 
-for i in range (len(y_test)):
-    sum += abs(y_test[i]-prediction[i])
+# =========================================================
+# DEBUG OUTPUT
+# =========================================================
 
-MAE = sum / len(y_test)
+print("\nActual values:")
+print(y_test[:20])
 
+print("\nPredicted values:")
+print(prediction[:20])
 
-print(f"\nMSE= [{MSE}]")
-print(f"\nRMSE= [{RMSE}]")
-print(f"\nMAE= {MAE}")
+print("\nNaN check:", np.isnan(prediction).any())
+print("Inf check:", np.isinf(prediction).any())
 
-#plot losses compared to model
+# =========================================================
+# METRICS
+# =========================================================
+
+mse = np.mean((y_test - prediction) ** 2)
+
+rmse = np.sqrt(mse)
+
+mae = np.mean(np.abs(y_test - prediction))
+
+print(f"\nMSE = {mse}")
+print(f"RMSE = {rmse}")
+print(f"MAE = {mae}")
+
+# =========================================================
+# TRAINING LOSS GRAPH
+# =========================================================
+
+plt.figure(figsize=(8,6))
+
 plt.plot(model.losses)
+
 plt.title("Training Loss")
 plt.xlabel("Epoch")
 plt.ylabel("MSE Loss")
+
 plt.grid(True)
+
 plt.show()
 
-#plot actual vs predicted values
+# ==========================================
+# ACTUAL VS PREDICTED GRAPH
+# ==========================================
 
-plt.plot(y_test, label="Actual")
-plt.plot(prediction, label="Predicted")
-plt.title("Actual vs Predicted")
-plt.xlabel("Sample")
-plt.ylabel("Congestion Multiplier")
+plt.figure(figsize=(10,7))
+
+# scatter points
+
+plt.scatter(
+    y_test,
+    prediction,
+    alpha=0.6,
+    s=40
+)
+
+# perfect prediction line
+
+min_val = min(np.min(y_test), np.min(prediction))
+max_val = max(np.max(y_test), np.max(prediction))
+
+plt.plot(
+    [min_val, max_val],
+    [min_val, max_val],
+    linestyle='--',
+    linewidth=2
+)
+
+plt.xlabel("Actual Congestion Multiplier")
+plt.ylabel("Predicted Congestion Multiplier")
+
+plt.title("Actual vs Predicted Congestion Multipliers")
+
 plt.grid(True)
-plt.legend()
+
 plt.show()

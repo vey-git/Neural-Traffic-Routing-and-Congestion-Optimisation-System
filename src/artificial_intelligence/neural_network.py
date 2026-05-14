@@ -122,6 +122,28 @@ class NeuralNetwork:
 
                 print(f"Epoch {epoch} | Loss: {loss}")
 
+    def save_model(self):
+
+        np.save("../main_program/W1.npy", self.W1)
+        np.save("../main_program/b1.npy", self.b1)
+
+        np.save("../main_program/W2.npy", self.W2)
+        np.save("../main_program/b2.npy", self.b2)
+
+        np.save("../main_program/W3.npy", self.W3)
+        np.save("../main_program/b3.npy", self.b3)
+
+    def load_model(self):
+
+        self.W1 = np.load("../main_program/W1.npy")
+        self.b1 = np.load("../main_program/b1.npy")
+
+        self.W2 = np.load("../main_program/W2.npy")
+        self.b2 = np.load("../main_program/b2.npy")
+
+        self.W3 = np.load("../main_program/W3.npy")
+        self.b3 = np.load("../main_program/b3.npy")
+
     # =========================
     # PREDICTION
     # =========================

@@ -9,7 +9,7 @@ from src.main_program.visualisation import (
     plotCongestionHeatmap
 )
 from metrics import exportTrainingData
-
+from src.artificial_intelligence.neural_network import NeuralNetwork
 from metrics import (
 
     calculateEdgeUsage,
@@ -32,18 +32,16 @@ from metrics import (
 # =========================
 # RUN SIMULATION
 # =========================
-
 def runSimulation(
     num_of_vehicles,
     algorithm
 ):
-
     # =========================
     # START TIMER
     # =========================
 
     start_time = time.time()
-
+    total_nodes_explored = 0
     # =========================
     # CREATE GRAPH
     # =========================
@@ -59,6 +57,7 @@ def runSimulation(
     vehicles = []
 
     for i in range(num_of_vehicles):
+
 
         valid_route = False
 
@@ -92,7 +91,9 @@ def runSimulation(
                 # store original route
                 vehicle.original_route = vehicle.route.copy()
 
+
                 vehicles.append(vehicle)
+                total_nodes_explored += vehicle.nodes_explored
 
                 print(f"Vehicle {i + 1} Created")
 
@@ -101,7 +102,9 @@ def runSimulation(
             except nx.NetworkXNoPath:
 
                 print("Invalid route... retrying")
-
+    average_nodes_explored = (
+            total_nodes_explored / num_of_vehicles
+    )
     # =========================
     # INITIAL METRICS
     # =========================
@@ -139,6 +142,7 @@ def runSimulation(
         f"Average Edge Usage BEFORE: {average_before}"
     )
 
+
     # =========================
     # UPDATE CONGESTION
     # =========================
@@ -151,7 +155,21 @@ def runSimulation(
 
         average_before
     )
+    plotCongestionHeatmap(
 
+        G,
+
+        edge_count_before,
+
+        average_before,
+
+        f"{algorithm}_before_rerouting",
+
+        num_of_vehicles,
+
+        vehicles
+
+    )
     # =========================
     # REROUTE VEHICLES
     # =========================
@@ -225,6 +243,7 @@ def runSimulation(
     # HEATMAP
     # =========================
 
+
     plotCongestionHeatmap(
 
         G,
@@ -295,6 +314,9 @@ def runSimulation(
     print(
         f"Red Edges: {congestion_after['red']}"
     )
+    print(
+        f"Average Nodes Explored: {average_nodes_explored}"
+    )
 
 
     # =========================
@@ -334,5 +356,6 @@ def runSimulation(
 
         rerouted_vehicles,
 
-        runtime
+        runtime,
+        average_nodes_explored
     ])

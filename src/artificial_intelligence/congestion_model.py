@@ -1,10 +1,10 @@
 import numpy as np
 
-from neural_network import NeuralNetwork
+from src.artificial_intelligence.neural_network import NeuralNetwork
 
 
 # =========================
-# LOAD MODEL
+# LOAD TRAINED MODEL
 # =========================
 
 model = NeuralNetwork(
@@ -16,9 +16,11 @@ model = NeuralNetwork(
 
 )
 
+model.load_model()
+
 
 # =========================
-# PREDICTION FUNCTION
+# PREDICT CONGESTION
 # =========================
 
 def predictCongestion(features):

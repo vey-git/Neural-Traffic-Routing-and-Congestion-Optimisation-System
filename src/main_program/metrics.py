@@ -1,6 +1,8 @@
 import csv
 import networkx as nx
+from folium import features
 
+from src.artificial_intelligence.congestion_model import predictCongestion
 
 # =========================
 # EDGE USAGE
@@ -197,7 +199,6 @@ def updateCongestionWeights(G, edge_count, average_edge_count):
 # =========================
 
 def exportResultsCSV(results):
-
     file_exists = False
 
     try:
@@ -226,7 +227,8 @@ def exportResultsCSV(results):
                 "orange_edges",
                 "red_edges",
                 "rerouted_vehicles",
-                "runtime_seconds"
+                "runtime_seconds",
+                "total_nodes_visited"
             ])
 
         writer.writerow(results)
@@ -284,24 +286,19 @@ def exportTrainingData(
 
                     )
 
-                    if usage < average_edge_usage * 0.5:
-
-                        multiplier = 1.0
-
-                    elif usage < average_edge_usage:
-
-                        multiplier = 1.5
-
-                    elif usage < average_edge_usage * 1.5:
-
-                        multiplier = 2.0
-
-                    else:
-
-                        multiplier = 3.0
-
-
+                    #updated congestion
                     nearby_congestion = usage
+                    features= [[
+                                usage,
+                                road_length,
+                                speed_limit,
+                                nearby_congestion,
+                                road_type_encoded
+                    ]]
+
+                    multiplier = predictCongestion(features)
+
+
 
                     writer.writerow([
 
