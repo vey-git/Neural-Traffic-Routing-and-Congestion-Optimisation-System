@@ -18,10 +18,10 @@ The project models real-world urban road networks using OpenStreetMap data and e
 ## System Visualisations
 
 ### Congestion Heat-map
-![Heatmap](images/heatmap.png)
+![Heatmap](plot_2026-05-14 16-59-11_1.png)
 
 ### Neural Network Training Loss
-![Loss](images/loss.png)
+![Loss](plot_2026-05-14 18-08-39_0.png)
 
 ## System Architecture
 
