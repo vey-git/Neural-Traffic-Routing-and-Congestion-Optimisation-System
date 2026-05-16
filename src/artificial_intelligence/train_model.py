@@ -187,3 +187,29 @@ plt.title("Actual vs Predicted Congestion Multipliers")
 plt.grid(True)
 
 plt.show()
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Calculate residuals
+residuals = y_test - prediction
+
+# Create histogram
+plt.figure(figsize=(8,6))
+
+plt.hist(
+    residuals,
+    bins=30
+)
+
+plt.xlabel("Residual Error")
+
+plt.ylabel("Frequency")
+
+plt.title("Residual Error Distribution")
+
+plt.grid(True)
+
+plt.savefig("residual_histogram.png")
+
+plt.show()

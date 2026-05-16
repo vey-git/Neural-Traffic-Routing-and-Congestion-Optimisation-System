@@ -312,4 +312,204 @@ createGraph(
 
 )
 
+# =========================================================
+# LOAD AVERAGED RESULTS
+# =========================================================
+
+df = pd.read_csv("average_results.csv")
+
+# =========================================================
+# CLEAN COLUMN NAMES
+# =========================================================
+
+df.columns = df.columns.str.strip()
+
+# =========================================================
+# OPTIONAL:
+# MAKE LABELS LOOK CLEANER
+# =========================================================
+
+df["method"] = (
+    df["algorithm"].str.upper()
+    + " - "
+    + df["weighting_mode"].str.replace("_", " ").str.title()
+)
+
+# =========================================================
+# GLOBAL GRAPH STYLE
+# =========================================================
+
+plt.style.use("seaborn-v0_8-whitegrid")
+
+FONT_SIZE = 13
+TITLE_SIZE = 16
+
+# =========================================================
+# HELPER FUNCTION
+# =========================================================
+
+def create_graph(
+    y_column,
+    y_label,
+    title,
+    filename
+):
+
+    plt.figure(figsize=(10, 6))
+
+    for method in df["method"].unique():
+
+        subset = df[df["method"] == method]
+
+        plt.plot(
+            subset["vehicles"],
+            subset[y_column],
+            marker='o',
+            linewidth=2.5,
+            markersize=7,
+            label=method
+        )
+
+    plt.xlabel(
+        "Number of Vehicles",
+        fontsize=FONT_SIZE
+    )
+
+    plt.ylabel(
+        y_label,
+        fontsize=FONT_SIZE
+    )
+
+    plt.title(
+        title,
+        fontsize=TITLE_SIZE,
+        fontweight='bold'
+    )
+
+    plt.legend(
+        fontsize=11
+    )
+
+    plt.xticks(
+        fontsize=11
+    )
+
+    plt.yticks(
+        fontsize=11
+    )
+
+    plt.tight_layout()
+
+    plt.savefig(
+        filename,
+        dpi=300,
+        bbox_inches='tight'
+    )
+
+    plt.show()
+
+# =========================================================
+# GRAPH 1
+# AVERAGE TRAVEL COST
+# =========================================================
+
+create_graph(
+
+    y_column="average_travel_cost",
+
+    y_label="Average Travel Cost",
+
+    title="Average Travel Cost vs Vehicle Count",
+
+    filename="average_travel_cost.png"
+
+)
+
+# =========================================================
+# GRAPH 2
+# RUNTIME
+# =========================================================
+
+create_graph(
+
+    y_column="runtime_seconds",
+
+    y_label="Runtime (Seconds)",
+
+    title="Runtime Scalability Comparison",
+
+    filename="runtime_scalability.png"
+
+)
+
+# =========================================================
+# GRAPH 3
+# AVERAGE EDGE USAGE
+# =========================================================
+
+create_graph(
+
+    y_column="average_edge_usage",
+
+    y_label="Average Edge Usage",
+
+    title="Average Edge Usage vs Vehicle Count",
+
+    filename="average_edge_usage.png"
+
+)
+
+# =========================================================
+# GRAPH 4
+# MAXIMUM EDGE USAGE
+# =========================================================
+
+create_graph(
+
+    y_column="max_edge_usage",
+
+    y_label="Maximum Edge Usage",
+
+    title="Maximum Congestion Bottleneck Comparison",
+
+    filename="max_edge_usage.png"
+
+)
+
+# =========================================================
+# GRAPH 5
+# REROUTED VEHICLES
+# =========================================================
+
+create_graph(
+
+    y_column="rerouted_vehicles",
+
+    y_label="Vehicles Rerouted",
+
+    title="Adaptive Rerouting Behaviour",
+
+    filename="rerouted_vehicles.png"
+
+)
+
+# =========================================================
+# GRAPH 6
+# NODES VISITED
+# =========================================================
+
+create_graph(
+
+    y_column="total_nodes_visited",
+
+    y_label="Average Nodes Explored",
+
+    title="Search Space Exploration Comparison",
+
+    filename="nodes_visited.png"
+
+)
+
+print("\nGraphs generated successfully.")
+
 print("\nGraphs generated successfully.")
