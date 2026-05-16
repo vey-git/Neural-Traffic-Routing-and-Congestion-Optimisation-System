@@ -154,13 +154,21 @@ def calculateRouteChanges(vehicles):
 
 
 # =========================
+
 # CONGESTION WEIGHTING
+
 # =========================
 
 def updateCongestionWeights(
+
         G,
+
         edge_count,
-        average_edge_count
+
+        average_edge_count,
+
+        use_neural_network=False
+
 ):
 
     for edge in edge_count:
@@ -173,120 +181,150 @@ def updateCongestionWeights(
 
             edge_data = G[u][v]
 
-            # =========================
-            # UPDATE ALL PARALLEL EDGES
-            # =========================
+            # update ALL parallel edges
 
             for key in edge_data:
 
-                data = edge_data[key]
+                base_time = edge_data[key]['base_travel_time']
 
-                # =========================
-                # BASE TRAVEL TIME
-                # =========================
+                road_length = edge_data[key].get("length", 0)
 
-                base_time = data.get(
-                    'base_travel_time',
-                    1
-                )
+                speed_limit = edge_data[key].get(
 
-                # =========================
-                # ROAD FEATURES
-                # =========================
-
-                road_length = data.get(
-                    "length",
-                    0
-                )
-
-                speed_limit = data.get(
                     "speed_kph",
+
                     30
+
                 )
 
                 if isinstance(speed_limit, list):
+
                     speed_limit = speed_limit[0]
 
-                road_type = data.get(
+                road_type = edge_data[key].get(
+
                     "highway",
+
                     "residential"
+
                 )
 
                 if isinstance(road_type, list):
-                    road_type = road_type[0]
 
-                # =========================
-                # ROAD TYPE ENCODING
-                # =========================
+                    road_type = road_type[0]
 
                 road_mapping = {
 
                     "motorway": 0,
+
                     "trunk": 1,
+
                     "primary": 2,
+
                     "secondary": 3,
+
                     "tertiary": 4,
+
                     "residential": 5
 
                 }
 
                 road_type_encoded = road_mapping.get(
-                    road_type,
-                    5
-                )
 
-                # =========================
-                # NEARBY CONGESTION
-                # =========================
+                    road_type,
+
+                    5
+
+                )
 
                 nearby_congestion = usage
 
-                # =========================
-                # FEATURE VECTOR
-                # =========================
+                # ==================================
+
+                # NEURAL NETWORK FEATURES
+
+                # ==================================
 
                 features = [[
 
                     usage,
+
                     road_length,
+
                     speed_limit,
+
                     nearby_congestion,
+
                     road_type_encoded
 
                 ]]
 
-                # =========================
-                # NEURAL NETWORK PREDICTION
-                # =========================
+                # ==================================
 
-                try:
+                # CHOOSE WEIGHTING METHOD
 
-                    multiplier = float(
-                        predictCongestion(features)
-                    )
+                # ==================================
 
-                except:
+                if use_neural_network:
 
-                    multiplier = 1.0
+                    try:
 
-                # =========================
-                # SAFETY CLAMP
-                # =========================
+                        prediction = predictCongestion(
+                            features
+                        )
 
-                multiplier = max(
-                    1.0,
-                    min(multiplier, 3.0)
-                )
+                        # convert numpy output to scalar
+                        multiplier = 1.0 + (float(prediction) * 4.0)
 
-                # =========================
-                # UPDATE TRAVEL TIME
-                # =========================
+                        # amplify learned congestion effect
+                        multiplier = multiplier * 2.0
 
-                new_time = (
-                    base_time * multiplier
-                )
+                        multiplier = max(
+                            1.0,
+                            min(multiplier, 5.0)
+                        )
 
-                data['travel_time'] = new_time
+                    except Exception as e:
+
+                        print(
+                            f"Prediction Error: {e}"
+                        )
+
+                        multiplier = 1.0
+
+                else:
+
+                    # STATIC CONGESTION WEIGHTING
+
+                    if usage < average_edge_count * 0.5:
+
+                        multiplier = 1.0
+
+                    elif usage < average_edge_count:
+
+                        multiplier = 1.1
+
+                    elif usage < average_edge_count * 1.5:
+
+                        multiplier = 1.4
+
+                    elif usage < average_edge_count * 2:
+
+                        multiplier = 1.8
+
+                    else:
+
+                        multiplier = 2.5
+
+                # ==================================
+
+                # UPDATE EDGE COST
+
+                # ==================================
+
+                new_time = base_time * multiplier
+
+                edge_data[key]['travel_time'] = new_time
 
 
 # =========================
@@ -308,7 +346,7 @@ def exportResultsCSV(results):
         pass
 
     with open(
-        "results.csv",
+        "results_nn.csv",
         "a",
         newline=""
     ) as file:
@@ -321,6 +359,7 @@ def exportResultsCSV(results):
 
                 "vehicles",
                 "algorithm",
+                "weighting_mode",
                 "rerouting",
                 "average_edge_usage",
                 "max_edge_usage",
@@ -337,7 +376,6 @@ def exportResultsCSV(results):
             ])
 
         writer.writerow(results)
-
 
 # =========================
 # EXPORT TRAINING DATA

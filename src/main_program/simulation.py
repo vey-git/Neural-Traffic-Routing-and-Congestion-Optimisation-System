@@ -33,8 +33,13 @@ from metrics import (
 # RUN SIMULATION
 # =========================
 def runSimulation(
+
     num_of_vehicles,
-    algorithm
+
+    algorithm,
+
+    use_neural_network=False
+
 ):
     # =========================
     # START TIMER
@@ -146,14 +151,15 @@ def runSimulation(
     # =========================
     # UPDATE CONGESTION
     # =========================
-
     updateCongestionWeights(
 
         G,
 
         edge_count_before,
 
-        average_before
+        average_before,
+
+        use_neural_network
     )
     plotCongestionHeatmap(
 
@@ -244,6 +250,12 @@ def runSimulation(
     # =========================
 
 
+    mode = (
+        f"{algorithm}_neural_network"
+        if use_neural_network
+        else f"{algorithm}_static"
+    )
+
     plotCongestionHeatmap(
 
         G,
@@ -252,7 +264,7 @@ def runSimulation(
 
         average_after,
 
-        algorithm,
+        mode,
 
         num_of_vehicles,
 
@@ -329,12 +341,13 @@ def runSimulation(
         average_after
     )
 
-
     exportResultsCSV([
 
         num_of_vehicles,
 
         algorithm,
+
+        "neural_network" if use_neural_network else "static",
 
         True,
 
@@ -357,5 +370,7 @@ def runSimulation(
         rerouted_vehicles,
 
         runtime,
+
         average_nodes_explored
+
     ])
