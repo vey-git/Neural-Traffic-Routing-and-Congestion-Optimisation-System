@@ -7,5 +7,9 @@ num_of_vehicles = int(
 )
 algorithm = "dijkstra"
 
-
-runSimulation(num_of_vehicles, algorithm)
+def runSimulation(
+    num_of_vehicles,
+    algorithm,
+    use_neural_network=False
+):
+    runSimulation(num_of_vehicles, "astar", use_neural_network=True)

@@ -1,8 +1,9 @@
 import csv
 import networkx as nx
-from folium import features
 
-from src.artificial_intelligence.congestion_model import predictCongestion
+from src.artificial_intelligence.congestion_model import (
+    predictCongestion
+)
 
 # =========================
 # EDGE USAGE
@@ -51,9 +52,7 @@ def calculateAverageEdgeUsage(edge_count):
 
 def calculateMaxEdgeUsage(edge_count):
 
-    max_usage = max(edge_count.values())
-
-    return max_usage
+    return max(edge_count.values())
 
 
 # =========================
@@ -67,9 +66,11 @@ def calculateTotalTravelCost(G, vehicles):
     for vehicle in vehicles:
 
         route_cost = nx.path_weight(
+
             G,
             vehicle.route,
             weight='travel_time'
+
         )
 
         total_cost += route_cost
@@ -83,18 +84,22 @@ def calculateTotalTravelCost(G, vehicles):
 
 def calculateAverageTravelCost(G, vehicles):
 
-    total_cost = calculateTotalTravelCost(G, vehicles)
+    total_cost = calculateTotalTravelCost(
+        G,
+        vehicles
+    )
 
-    average_cost = total_cost / len(vehicles)
-
-    return average_cost
+    return total_cost / len(vehicles)
 
 
 # =========================
 # CONGESTION DISTRIBUTION
 # =========================
 
-def countCongestionLevels(edge_count, average_edge_count):
+def countCongestionLevels(
+        edge_count,
+        average_edge_count
+):
 
     green = 0
     yellow = 0
@@ -122,10 +127,12 @@ def countCongestionLevels(edge_count, average_edge_count):
             red += 1
 
     return {
+
         "green": green,
         "yellow": yellow,
         "orange": orange,
         "red": red
+
     }
 
 
@@ -150,7 +157,11 @@ def calculateRouteChanges(vehicles):
 # CONGESTION WEIGHTING
 # =========================
 
-def updateCongestionWeights(G, edge_count, average_edge_count):
+def updateCongestionWeights(
+        G,
+        edge_count,
+        average_edge_count
+):
 
     for edge in edge_count:
 
@@ -162,36 +173,120 @@ def updateCongestionWeights(G, edge_count, average_edge_count):
 
             edge_data = G[u][v]
 
-            # IMPORTANT
-            # update ALL parallel edges
+            # =========================
+            # UPDATE ALL PARALLEL EDGES
+            # =========================
+
             for key in edge_data:
 
-                base_time = edge_data[key]['base_travel_time']
+                data = edge_data[key]
 
-                # congestion multiplier
-                if usage < average_edge_count * 0.5:
+                # =========================
+                # BASE TRAVEL TIME
+                # =========================
+
+                base_time = data.get(
+                    'base_travel_time',
+                    1
+                )
+
+                # =========================
+                # ROAD FEATURES
+                # =========================
+
+                road_length = data.get(
+                    "length",
+                    0
+                )
+
+                speed_limit = data.get(
+                    "speed_kph",
+                    30
+                )
+
+                if isinstance(speed_limit, list):
+                    speed_limit = speed_limit[0]
+
+                road_type = data.get(
+                    "highway",
+                    "residential"
+                )
+
+                if isinstance(road_type, list):
+                    road_type = road_type[0]
+
+                # =========================
+                # ROAD TYPE ENCODING
+                # =========================
+
+                road_mapping = {
+
+                    "motorway": 0,
+                    "trunk": 1,
+                    "primary": 2,
+                    "secondary": 3,
+                    "tertiary": 4,
+                    "residential": 5
+
+                }
+
+                road_type_encoded = road_mapping.get(
+                    road_type,
+                    5
+                )
+
+                # =========================
+                # NEARBY CONGESTION
+                # =========================
+
+                nearby_congestion = usage
+
+                # =========================
+                # FEATURE VECTOR
+                # =========================
+
+                features = [[
+
+                    usage,
+                    road_length,
+                    speed_limit,
+                    nearby_congestion,
+                    road_type_encoded
+
+                ]]
+
+                # =========================
+                # NEURAL NETWORK PREDICTION
+                # =========================
+
+                try:
+
+                    multiplier = float(
+                        predictCongestion(features)
+                    )
+
+                except:
 
                     multiplier = 1.0
 
-                elif usage < average_edge_count:
+                # =========================
+                # SAFETY CLAMP
+                # =========================
 
-                    multiplier = 1.1
+                multiplier = max(
+                    1.0,
+                    min(multiplier, 3.0)
+                )
 
-                elif usage < average_edge_count * 1.5:
+                # =========================
+                # UPDATE TRAVEL TIME
+                # =========================
 
-                    multiplier = 1.4
+                new_time = (
+                    base_time * multiplier
+                )
 
-                elif usage < average_edge_count * 2:
-
-                    multiplier = 1.8
-
-                else:
-
-                    multiplier = 2.5
-
-                new_time = base_time * multiplier
-
-                edge_data[key]['travel_time'] = new_time
+                data['travel_time'] = new_time
 
 
 # =========================
@@ -199,22 +294,31 @@ def updateCongestionWeights(G, edge_count, average_edge_count):
 # =========================
 
 def exportResultsCSV(results):
+
     file_exists = False
 
     try:
+
         open("results.csv", "r")
+
         file_exists = True
 
     except FileNotFoundError:
+
         pass
 
-    with open("results.csv", "a", newline="") as file:
+    with open(
+        "results.csv",
+        "a",
+        newline=""
+    ) as file:
 
         writer = csv.writer(file)
 
         if not file_exists:
 
             writer.writerow([
+
                 "vehicles",
                 "algorithm",
                 "rerouting",
@@ -229,89 +333,108 @@ def exportResultsCSV(results):
                 "rerouted_vehicles",
                 "runtime_seconds",
                 "total_nodes_visited"
+
             ])
 
         writer.writerow(results)
 
+
+# =========================
+# EXPORT TRAINING DATA
+# =========================
+
 def exportTrainingData(
 
-                G,
+        G,
+        edge_count,
+        average_edge_usage
 
-                edge_count,
+):
 
-                average_edge_usage
+    with open(
+        "../artificial_intelligence/training_data.csv",
+        "a",
+        newline=""
+    ) as file:
 
+        writer = csv.writer(file)
+
+        for u, v, key, data in G.edges(
+                keys=True,
+                data=True
         ):
 
-            with open("../artificial_intelligence/training_data.csv", "a", newline="") as file:
+            usage = edge_count.get(
+                (u, v),
+                0
+            )
 
-                writer = csv.writer(file)
+            road_length = data.get(
+                "length",
+                0
+            )
 
-                for u, v, key, data in G.edges(keys=True, data=True):
+            speed_limit = data.get(
+                "speed_kph",
+                30
+            )
 
-                    usage = edge_count.get((u, v), 0)
+            if isinstance(speed_limit, list):
+                speed_limit = speed_limit[0]
 
-                    road_length = data.get("length", 0)
-                    speed_limit = data.get("speed_kph", 30)
+            road_type = data.get(
+                "highway",
+                "residential"
+            )
 
-                    if isinstance(speed_limit, list):
-                        speed_limit = speed_limit[0]
+            if isinstance(road_type, list):
+                road_type = road_type[0]
 
-                    road_type = data.get("highway", "residential")
+            road_mapping = {
 
-                    if isinstance(road_type, list):
-                        road_type = road_type[0]
+                "motorway": 0,
+                "trunk": 1,
+                "primary": 2,
+                "secondary": 3,
+                "tertiary": 4,
+                "residential": 5
 
-                    road_mapping = {
+            }
 
-                        "motorway": 0,
+            road_type_encoded = road_mapping.get(
+                road_type,
+                5
+            )
 
-                        "trunk": 1,
+            nearby_congestion = usage
 
-                        "primary": 2,
+            features = [[
 
-                        "secondary": 3,
+                usage,
+                road_length,
+                speed_limit,
+                nearby_congestion,
+                road_type_encoded
 
-                        "tertiary": 4,
+            ]]
 
-                        "residential": 5
+            try:
 
-                    }
+                multiplier = float(
+                    predictCongestion(features)
+                )
 
-                    road_type_encoded = road_mapping.get(
+            except:
 
-                        road_type,
+                multiplier = 1.0
 
-                        5
+            writer.writerow([
 
-                    )
+                usage,
+                road_length,
+                speed_limit,
+                nearby_congestion,
+                road_type_encoded,
+                multiplier
 
-                    #updated congestion
-                    nearby_congestion = usage
-                    features= [[
-                                usage,
-                                road_length,
-                                speed_limit,
-                                nearby_congestion,
-                                road_type_encoded
-                    ]]
-
-                    multiplier = predictCongestion(features)
-
-
-
-                    writer.writerow([
-
-                        usage,
-
-                        road_length,
-
-                        speed_limit,
-
-                        nearby_congestion,
-
-                        road_type_encoded,
-
-                        multiplier
-
-                    ])
+            ])
