@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # LOAD RESULTS
 # ==========================================
 
-df = pd.read_csv("results_nn.csv")
+df = pd.read_csv("../../results/data/processed/results_nn.csv")
 
 # ==========================================
 # CLEAN COLUMN NAMES
@@ -223,7 +223,7 @@ createGraph(
 
     "Average Travel Cost",
 
-    "graph_average_travel_cost.png"
+    "../main_program/cache/graph_average_travel_cost.png"
 
 )
 
@@ -240,7 +240,7 @@ createGraph(
 
     "Average Edge Usage",
 
-    "graph_average_edge_usage.png"
+    "../main_program/cache/graph_average_edge_usage.png"
 
 )
 
@@ -257,7 +257,7 @@ createGraph(
 
     "Maximum Edge Usage",
 
-    "graph_max_edge_usage.png"
+    "../main_program/cache/graph_max_edge_usage.png"
 
 )
 
@@ -274,7 +274,7 @@ createGraph(
 
     "Runtime (seconds)",
 
-    "graph_runtime.png"
+    "../main_program/cache/graph_runtime.png"
 
 )
 
@@ -291,7 +291,7 @@ createGraph(
 
     "Rerouted Vehicles",
 
-    "graph_rerouted_vehicles.png"
+    "../main_program/cache/graph_rerouted_vehicles.png"
 
 )
 
@@ -308,7 +308,7 @@ createGraph(
 
     "Average Nodes Visited",
 
-    "graph_nodes_visited.png"
+    "../main_program/cache/graph_nodes_visited.png"
 
 )
 
@@ -316,7 +316,7 @@ createGraph(
 # LOAD AVERAGED RESULTS
 # =========================================================
 
-df = pd.read_csv("average_results.csv")
+df = pd.read_csv("../../results/data/raw/average_results.csv")
 
 # =========================================================
 # CLEAN COLUMN NAMES
@@ -421,7 +421,7 @@ create_graph(
 
     title="Average Travel Cost vs Vehicle Count",
 
-    filename="average_travel_cost.png"
+    filename="../../results/figures/average_travel_cost.png"
 
 )
 
@@ -438,7 +438,7 @@ create_graph(
 
     title="Runtime Scalability Comparison",
 
-    filename="runtime_scalability.png"
+    filename="../../results/figures/runtime_scalability.png"
 
 )
 
@@ -455,7 +455,7 @@ create_graph(
 
     title="Average Edge Usage vs Vehicle Count",
 
-    filename="average_edge_usage.png"
+    filename="../main_program/cache/average_edge_usage.png"
 
 )
 
@@ -472,7 +472,7 @@ create_graph(
 
     title="Maximum Congestion Bottleneck Comparison",
 
-    filename="max_edge_usage.png"
+    filename="../main_program/cache/max_edge_usage.png"
 
 )
 
@@ -489,7 +489,7 @@ create_graph(
 
     title="Adaptive Rerouting Behaviour",
 
-    filename="rerouted_vehicles.png"
+    filename="../../results/figures/rerouted_vehicles.png"
 
 )
 
@@ -506,7 +506,7 @@ create_graph(
 
     title="Search Space Exploration Comparison",
 
-    filename="nodes_visited.png"
+    filename="../../results/figures/nodes_visited.png"
 
 )
 
