@@ -2,9 +2,7 @@ import matplotlib.pyplot as mpl
 import numpy as np
 import pandas as pd
 
-from neural_network.neural_network import (
-    NeuralNetwork
-)
+from src.neural_network.neural_network import NeuralNetwork
 
 from utils.config import (
 
@@ -53,7 +51,7 @@ print("Dataset loaded successfully.")
 # INPUT FEATURES
 # ==========================================================
 
-X = training_data[[
+feature_columns = [
 
     "edge_usage",
 
@@ -65,7 +63,37 @@ X = training_data[[
 
     "road_type"
 
-]].values
+]
+
+# force numeric conversion
+
+for column in feature_columns:
+
+    training_data[column] = pd.to_numeric(
+
+        training_data[column],
+
+        errors="coerce"
+
+    )
+
+# remove invalid rows
+
+training_data = training_data.dropna(
+
+    subset=feature_columns + ["multiplier"]
+
+)
+
+# convert to float arrays
+
+X = training_data[
+    feature_columns
+].values.astype(float)
+
+y = training_data[[
+    "multiplier"
+]].values.astype(float)
 
 
 # ==========================================================
