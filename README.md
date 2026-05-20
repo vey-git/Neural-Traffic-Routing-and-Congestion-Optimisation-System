@@ -1,6 +1,6 @@
 # Neural Traffic Routing and Congestion Optimisation System
 
-![Adaptive Traffic Heatmap](results/plots/heatmaps/heatmap_astar_100.png)
+![Adaptive Traffic Heatmap](results/plots/results/heatmaps/heatmap_astar_100.png)
 
 An intelligent traffic-routing and congestion optimisation system built using:
 
@@ -131,13 +131,13 @@ Automatically generates:
 
 ## Neural Network Training Loss
 
-![Training Loss](results/training_loss.png)
+![Training Loss](results/plots/training_loss.png)
 
 ---
 
 ## Prediction Accuracy
 
-![Prediction Accuracy](results/actual_vs_predicted.png)
+![Prediction Accuracy](results/plots/actual_vs_predicted.png)
 
 ---
 
