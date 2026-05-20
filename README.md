@@ -1,118 +1,423 @@
-# Adaptive Traffic Routing and Congestion Optimisation
+# Neural Traffic Routing and Congestion Optimisation System
 
-A congestion-aware traffic routing and simulation system combining classical graph-search algorithms, dynamic congestion weighting, and custom feed-forward neural networks for adaptive transportation optimisation.
+![Adaptive Traffic Heatmap](results/plots/heatmaps/heatmap_astar_100.png)
 
-The project models real-world urban road networks using OpenStreetMap data and evaluates how dynamic rerouting strategies influence congestion distribution across weighted transportation graphs.
+An intelligent traffic-routing and congestion optimisation system built using:
 
-## Research Motivation 
+- Python
+- OSMnx
+- NetworkX
+- NumPy
+- Machine Learning
+- Adaptive Congestion Weighting
 
-Traffic congestion is an ongoing issue across the world, particularly within major urban environments such as London and Manchester where population density is significantly higher. Congestion negatively impacts both transportation efficiency and the general quality of travel for commuters attempting to move between destinations without unnecessary delay.
+This project simulates large-scale vehicle routing across real-world urban road networks while dynamically adapting to congestion using both:
+- classical shortest-path routing algorithms
+- machine-learning-based congestion prediction
 
-Traffic congestion occurs when the number of vehicles using a road exceeds the capacity that the road network can efficiently handle, resulting in increased delays, slower travel speeds, and higher levels of inconvenience for road users.
+---
 
-With increased travel times, congestion also introduces financial costs due to greater fuel consumption, prolonged idle periods, and inefficient re-routing behaviour. These effects become increasingly significant as urban populations continue to grow and transportation infrastructure becomes more heavily utilised.
+# Overview
 
-This dissertation investigates adaptive approaches for traffic routing and congestion mitigation using both classical pathfinding algorithms and artificial intelligence techniques. Classical shortest-path approaches such as Dijkstra's algorithm and A* are explored as foundational routing methods. These approaches are then extended using dynamic congestion modelling and a custom feed-forward neural network capable of adapting to surrounding traffic conditions.
+This project investigates how adaptive congestion-aware routing can improve traffic flow across urban environments.
 
-## Features
+The system:
+- generates real-world road graphs using OpenStreetMap
+- simulates thousands of vehicles
+- dynamically updates edge congestion
+- reroutes vehicles using shortest-path algorithms
+- evaluates routing efficiency through metrics and visualisations
 
-- Real-world road network extraction using OSMnx
-- Weighted graph-based transportation modelling
-- Dijkstra and A* pathfinding comparison
-- Dynamic congestion-aware rerouting
-- Congestion heat-map visualisation
-- Feed-forward neural network implemented from first principles
-- Runtime and routing-performance evaluation
-- Adaptive travel-time weighting system
+A custom feed-forward neural network was implemented entirely from scratch using NumPy to learn adaptive congestion-weighting behaviour from generated traffic data.
 
-## System Visualisations
+---
 
-### Congestion Heat-map
-![Heatmap](src/images/heatmap.png)
+# Key Features
 
-### Neural Network Training Loss
-![Loss](src/images/training_loss.png)
+## Real-World Road Network Simulation
 
-## System Architecture
+Uses OpenStreetMap road data through OSMnx to generate:
+- urban traffic graphs
+- drivable road networks
+- realistic edge travel times
+- road metadata
 
-The system follows the pipeline:
+---
 
-1. Generate weighted transportation graph from OpenStreetMap
-2. Simulate vehicles across valid graph nodes
-3. Calculate shortest-path routes using Dijkstra or A*
-4. Measure edge utilisation and congestion severity
-5. Apply adaptive congestion weighting
-6. Dynamically reroute vehicles
-7. Train neural network on congestion features
-8. Evaluate routing and prediction performance
-  
-## Experimental Evaluation
+## Intelligent Routing Algorithms
 
-The system was evaluated across traffic densities ranging from 10 to 1000 simulated vehicles.
+Implemented routing algorithms:
 
-Metrics included:
-- Runtime complexity
-- Average edge utilisation
-- Maximum bottleneck severity
-- Average travel cost
-- Mean Squared Error (MSE)
-- Root Mean Squared Error (RMSE)
-- Mean Absolute Error (MAE)
+- Dijkstra’s Algorithm
+- A* Search Algorithm
 
-## Key Findings
+Vehicles dynamically reroute after congestion updates.
 
-- A* reduced unnecessary graph traversal compared to Dijkstra
-- Dynamic congestion weighting redistributed traffic flow
-- Bottlenecks persisted on high-connectivity arterial roads
-- The neural network successfully learned general congestion relationships
-- Dataset imbalance reduced prediction accuracy for severe congestion states
+---
 
-## Project Structure
+## Adaptive Congestion Modelling
+
+Traffic congestion is estimated using:
+- edge utilisation
+- nearby congestion density
+- road type
+- road length
+- speed limits
+
+Edge weights are continuously updated to simulate evolving traffic conditions.
+
+---
+
+## Custom Neural Network
+
+A fully connected feed-forward neural network built from scratch using NumPy.
+
+Features include:
+- forward propagation
+- backpropagation
+- ReLU activation
+- regression output
+- model persistence
+- feature normalisation
+- saved inference scaling
+
+The network learns adaptive congestion-weighting behaviour from generated simulation data.
+
+---
+
+## Automated Visualisation System
+
+Automatically generates:
+- congestion heatmaps
+- runtime scaling graphs
+- congestion comparison graphs
+- bottleneck analysis
+- rerouting behaviour graphs
+- neural-network evaluation plots
+
+---
+
+# Example Outputs
+
+## Runtime Scaling Comparison
+
+![Runtime Scaling](results/plots/results/runtime_comparison.png)
+
+---
+
+## Congestion Reduction Analysis
+
+![Congestion Comparison](results/plots/results/average_congestion_comparison.png)
+
+---
+
+## Maximum Bottleneck Severity
+
+![Bottleneck Analysis](results/plots/results/maximum_bottleneck_comparison.png)
+
+---
+
+## Adaptive Rerouting Behaviour
+
+![Adaptive Rerouting](results/plots/results/adaptive_rerouting_comparison.png)
+
+---
+
+## Network Travel Cost
+
+![Travel Cost Analysis](results/plots/results/total_travel_cost_comparison.png)
+
+---
+
+## Neural Network Training Loss
+
+![Training Loss](results/training_loss.png)
+
+---
+
+## Prediction Accuracy
+
+![Prediction Accuracy](results/actual_vs_predicted.png)
+
+---
+
+## Residual Error Distribution
+
+![Residual Distribution](results/figures/residual_histogram.png)
+
+---
+
+# Project Structure
 
 ```text
 Neural-Traffic-Routing-and-Congestion-Optimisation-System/
 │
-├── README.md
-├── requirements.txt
+├── assets/
+├── cache/
+├── docs/
+│
+├── models/
+│   └── weights/
+│       ├── W1.npy
+│       ├── W2.npy
+│       ├── W3.npy
+│       ├── b1.npy
+│       ├── b2.npy
+│       ├── b3.npy
+│       ├── X_mean.npy
+│       └── X_std.npy
 │
 ├── research/
 │   ├── experiments.md
 │   ├── ideas.md
 │   └── research_log.md
 │
-├── src/
+├── results/
+│   ├── actual_vs_predicted.png
+│   ├── training_loss.png
 │   │
-│   ├── artificial_intelligence/
-│   │   ├── congestion_model.py
+│   ├── figures/
+│   │   └── residual_histogram.png
+│   │
+│   ├── data/
+│   │   ├── processed/
+│   │   ├── raw/
+│   │   └── training/
+│   │
+│   └── plots/
+│       ├── heatmaps/
+│       │   └── heatmap_astar_100.png
+│       │
+│       └── results/
+│           ├── adaptive_rerouting_comparison.png
+│           ├── average_congestion_comparison.png
+│           ├── maximum_bottleneck_comparison.png
+│           ├── runtime_comparison.png
+│           └── total_travel_cost_comparison.png
+│
+├── src/
+│   ├── neural_network/
+│   │   ├── __init__.py
 │   │   ├── inference.py
 │   │   ├── neural_network.py
-│   │   ├── train_model.py
-│   │   └── training_data.csv
+│   │   └── train_model.py
 │   │
-│   ├── images/
-│   │   ├── heatmap.png
-│   │   └── training_loss.png
+│   ├── routing/
+│   │   ├── __init__.py
+│   │   ├── graph.py
+│   │   ├── metrics.py
+│   │   ├── simulation.py
+│   │   └── vehicle.py
 │   │
-│   └── main_program/
-│       ├── averaged_results.csv
-│       ├── generate_evaluation_graphs.py
-│       ├── graph.py
-│       ├── main.py
-│       ├── metrics.py
-│       ├── results.csv
-│       ├── simulation.py
-│       ├── vehicle.py
-│       ├── visualisation.py
-│       │
-│       ├── W1.npy
-│       ├── W2.npy
-│       ├── W3.npy
-│       ├── b1.npy
-│       ├── b2.npy
-│       └── b3.npy
+│   ├── utils/
+│   │   └── config.py
+│   │
+│   ├── visualisation/
+│   │   ├── __init__.py
+│   │   ├── evaluation_graphs.py
+│   │   └── visualisation.py
+│   │
+│   ├── __init__.py
+│   └── main.py
 │
-└── tests/
+├── README.md
+└── requirements.txt
 ```
 
-## Installation and Requirements
+---
+
+# Neural Network Architecture
+
+The congestion prediction model uses a fully connected feed-forward neural network:
+
+```text
+Input Layer (5 Features)
+        ↓
+Hidden Layer 1 (16 Neurons)
+        ↓
+Hidden Layer 2 (8 Neurons)
+        ↓
+Output Layer (1 Regression Output)
+```
+
+---
+
+# Neural Network Input Features
+
+| Feature | Description |
+|---|---|
+| Edge Usage | Number of vehicles using an edge |
+| Road Length | Physical road length |
+| Speed Limit | Road speed limit |
+| Nearby Congestion | Local congestion estimate |
+| Road Type | Encoded road classification |
+
+---
+
+# Simulation Workflow
+
+## 1. Graph Generation
+
+Road networks are generated from OpenStreetMap.
+
+---
+
+## 2. Vehicle Generation
+
+Vehicles are assigned:
+- random start nodes
+- random destination nodes
+
+---
+
+## 3. Initial Routing
+
+Vehicles compute shortest paths using:
+- Dijkstra
+or
+- A*
+
+---
+
+## 4. Congestion Analysis
+
+Edge usage is analysed across the network.
+
+---
+
+## 5. Adaptive Weighting
+
+Travel times are dynamically updated using congestion weighting.
+
+---
+
+## 6. Vehicle Rerouting
+
+Vehicles recompute routes using updated edge weights.
+
+---
+
+## 7. Evaluation
+
+Performance metrics and visualisations are generated automatically.
+
+---
+
+# Evaluation Metrics
+
+The system evaluates:
+
+- Average Edge Usage
+- Maximum Congestion Bottleneck
+- Total Travel Cost
+- Average Travel Cost
+- Runtime Scaling
+- Vehicle Rerouting Count
+- Congestion Distribution
+- Neural Network Prediction Error
+- Residual Error Distribution
+
+---
+
+# Installation
+
+## Clone Repository
+
+```bash
+git clone https://github.com/vey-git/Neural-Traffic-Routing-and-Congestion-Optimisation-System.git
+
+cd Neural-Traffic-Routing-and-Congestion-Optimisation-System
+```
+
+---
+
+## Create Virtual Environment
+
+```bash
+python -m venv .venv
+```
+
+---
+
+## Activate Environment
+
+### macOS / Linux
+
+```bash
+source .venv/bin/activate
+```
+
+### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+---
+
+## Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
+
+---
+
+# Running Simulations
+
+## Run Main Simulation
+
+```bash
+python -m src.main
+```
+
+---
+
+## Train Neural Network
+
+```bash
+python -m src.neural_network.train_model
+```
+
+---
+
+## Generate Evaluation Graphs
+
+```bash
+python -m src.visualisation.visualisation
+```
+
+---
+
+# Future Improvements
+
+Planned future extensions include:
+
+- Reinforcement learning routing
+- Real-time traffic API integration
+- GPU acceleration
+- Distributed simulation
+- Multi-agent traffic systems
+- Live congestion forecasting
+- Graph neural networks
+- SUMO integration
+
+---
+
+# Technologies Used
+
+- Python
+- NumPy
+- Pandas
+- Matplotlib
+- NetworkX
+- OSMnx
+- OpenStreetMap
+
+---
+
+# Author
+
+Harvey  
+Computer Science with Artificial Intelligence  
+Oxford Brookes University
