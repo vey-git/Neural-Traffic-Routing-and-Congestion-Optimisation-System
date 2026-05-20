@@ -96,16 +96,22 @@ def calculate_total_travel_cost(
 
     for vehicle in vehicles:
 
-        route_cost = nx.path_weight(
+        try:
 
-            graph,
+            route_cost = nx.path_weight(
 
-            vehicle.route,
+                graph,
 
-            weight="travel_time"
-        )
+                vehicle.route,
 
-        total_cost += route_cost
+                weight="travel_time"
+            )
+
+            total_cost += route_cost
+
+        except Exception:
+
+            continue
 
     return total_cost
 
@@ -230,15 +236,27 @@ def update_congestion_weights(
 
             data = edge_data[key]
 
+            # --------------------------------------------------
+            # BASE TRAVEL TIME
+            # --------------------------------------------------
+
             base_travel_time = data.get(
                 "base_travel_time",
-                1
+                1.0
             )
+
+            # --------------------------------------------------
+            # ROAD LENGTH
+            # --------------------------------------------------
 
             road_length = data.get(
                 "length",
                 0
             )
+
+            # --------------------------------------------------
+            # SPEED LIMIT
+            # --------------------------------------------------
 
             speed_limit = data.get(
                 "speed_kph",
@@ -248,6 +266,18 @@ def update_congestion_weights(
             if isinstance(speed_limit, list):
 
                 speed_limit = speed_limit[0]
+
+            try:
+
+                speed_limit = float(speed_limit)
+
+            except Exception:
+
+                speed_limit = 30.0
+
+            # --------------------------------------------------
+            # ROAD TYPE
+            # --------------------------------------------------
 
             road_type = data.get(
                 "highway",
@@ -265,10 +295,21 @@ def update_congestion_weights(
                 )
             )
 
-            nearby_congestion = usage
+            # --------------------------------------------------
+            # NEARBY CONGESTION
+            # --------------------------------------------------
+
+            nearby_congestion = (
+
+                    usage *
+
+                    (road_length / 100) *
+
+                    (50 / max(speed_limit, 1))
+            )
 
             # --------------------------------------------------
-            # FORCE NUMERIC FEATURES
+            # FEATURE VECTOR
             # --------------------------------------------------
 
             features = [[
@@ -285,7 +326,7 @@ def update_congestion_weights(
             ]]
 
             # --------------------------------------------------
-            # Neural Network Weighting
+            # NEURAL NETWORK WEIGHTING
             # --------------------------------------------------
 
             if use_neural_network:
@@ -299,16 +340,9 @@ def update_congestion_weights(
                         )
                     )
 
-                    multiplier = (
-
-                        1.0 +
-
-                        prediction
-                    )
-
                     multiplier = max(
                         1.0,
-                        min(multiplier, 5.0)
+                        min(prediction, 5.0)
                     )
 
                 except Exception as error:
@@ -320,7 +354,7 @@ def update_congestion_weights(
                     multiplier = 1.0
 
             # --------------------------------------------------
-            # Smooth Static Weighting
+            # STATIC CONGESTION WEIGHTING
             # --------------------------------------------------
 
             else:
@@ -330,14 +364,15 @@ def update_congestion_weights(
                     usage /
 
                     max(average_edge_usage, 1)
-
                 )
 
                 multiplier = (
 
                         1.0 +
 
-                        (congestion_factor ** 1.3) * 0.8
+                        (
+                                congestion_factor * 0.35
+                        )
                 )
 
                 multiplier = min(
@@ -354,7 +389,7 @@ def update_congestion_weights(
             )
 
             # --------------------------------------------------
-            # CONGESTION MEMORY / DECAY
+            # CONGESTION DECAY
             # --------------------------------------------------
 
             updated_travel_time = (
@@ -439,12 +474,13 @@ def export_results_csv(results):
 
 def export_training_data(
     graph,
-    edge_usage
+    edge_usage,
+    average_edge_usage
 ):
     """
-    Export neural network
+    Export neural-network
     training samples using
-    observed congestion ratios.
+    smooth congestion ratios.
     """
 
     file_exists = TRAINING_DATA_PATH.exists()
@@ -482,7 +518,7 @@ def export_training_data(
             ])
 
         # --------------------------------------------------
-        # EDGE DATA EXPORT
+        # EDGE EXPORT
         # --------------------------------------------------
 
         for u, v, key, data in graph.edges(
@@ -492,15 +528,27 @@ def export_training_data(
             data=True
         ):
 
+            # ----------------------------------------------
+            # EDGE USAGE
+            # ----------------------------------------------
+
             usage = edge_usage.get(
                 (u, v),
                 0
             )
 
+            # ----------------------------------------------
+            # ROAD LENGTH
+            # ----------------------------------------------
+
             road_length = data.get(
                 "length",
                 0
             )
+
+            # ----------------------------------------------
+            # SPEED LIMIT
+            # ----------------------------------------------
 
             speed_limit = data.get(
                 "speed_kph",
@@ -510,6 +558,18 @@ def export_training_data(
             if isinstance(speed_limit, list):
 
                 speed_limit = speed_limit[0]
+
+            try:
+
+                speed_limit = float(speed_limit)
+
+            except Exception:
+
+                speed_limit = 30.0
+
+            # ----------------------------------------------
+            # ROAD TYPE
+            # ----------------------------------------------
 
             road_type = data.get(
                 "highway",
@@ -527,36 +587,47 @@ def export_training_data(
                 )
             )
 
-            nearby_congestion = usage
+            # ----------------------------------------------
+            # NEARBY CONGESTION
+            # ----------------------------------------------
 
-            # --------------------------------------------------
-            # OBSERVED CONGESTION
-            # --------------------------------------------------
+            nearby_congestion = (
 
-            base_travel_time = data.get(
-                "base_travel_time",
-                1
+                    usage *
+
+                    (road_length / 100) *
+
+                    (50 / max(speed_limit, 1))
             )
 
-            current_travel_time = data.get(
-                "travel_time",
-                base_travel_time
+            # ----------------------------------------------
+            # CONGESTION TARGET
+            # ----------------------------------------------
+
+            congestion_factor = (
+
+                    usage /
+
+                    max(average_edge_usage, 1)
             )
-
-            if base_travel_time == 0:
-
-                base_travel_time = 1
 
             congestion_ratio = (
 
-                current_travel_time /
+                    1.0 +
 
-                base_travel_time
+                    (
+                            congestion_factor * 0.35
+                    )
             )
 
-            # --------------------------------------------------
+            congestion_ratio = min(
+                congestion_ratio,
+                5.0
+            )
+
+            # ----------------------------------------------
             # WRITE TRAINING SAMPLE
-            # --------------------------------------------------
+            # ----------------------------------------------
 
             writer.writerow([
 

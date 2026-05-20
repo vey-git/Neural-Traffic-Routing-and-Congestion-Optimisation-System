@@ -23,7 +23,6 @@ from utils.config import (
     MODEL_WEIGHTS_PATH,
 
     PLOTS_DIR
-
 )
 
 
@@ -62,10 +61,11 @@ feature_columns = [
     "nearby_congestion",
 
     "road_type"
-
 ]
 
-# force numeric conversion
+# ----------------------------------------------------------
+# FORCE NUMERIC CONVERSION
+# ----------------------------------------------------------
 
 for column in feature_columns:
 
@@ -74,38 +74,94 @@ for column in feature_columns:
         training_data[column],
 
         errors="coerce"
-
     )
 
-# remove invalid rows
+training_data["congestion_ratio"] = pd.to_numeric(
+
+    training_data["congestion_ratio"],
+
+    errors="coerce"
+)
+
+# ----------------------------------------------------------
+# REMOVE INVALID ROWS
+# ----------------------------------------------------------
 
 training_data = training_data.dropna(
 
     subset=feature_columns + ["congestion_ratio"]
-
 )
 
-# convert to float arrays
+# ----------------------------------------------------------
+# REMOVE EXTREME OUTLIERS
+# ----------------------------------------------------------
+
+training_data = training_data[
+    training_data["congestion_ratio"] < 5.0
+]
+
+training_data = training_data[
+    training_data["congestion_ratio"] > 0.8
+]
+
+# ----------------------------------------------------------
+# SHUFFLE DATASET
+# ----------------------------------------------------------
+
+training_data = training_data.sample(
+
+    frac=1,
+
+    random_state=42
+).reset_index(drop=True)
+
+# ----------------------------------------------------------
+# CONVERT TO NUMPY
+# ----------------------------------------------------------
 
 X = training_data[
     feature_columns
-].values.astype(float)
+].values.astype(np.float64)
 
 y = training_data[[
     "congestion_ratio"
-]].values.astype(float)
-
-
-# ==========================================================
-# TARGET OUTPUT
-# ==========================================================
-
-y = training_data[['congestion_ratio']].values
-
+]].values.astype(np.float64)
 
 print(f"Feature shape: {X.shape}")
 
 print(f"Target shape: {y.shape}")
+
+
+# ==========================================================
+# TARGET NORMALISATION
+# ==========================================================
+
+y_min = y.min()
+
+y_max = y.max()
+
+y = (
+
+    y - y_min
+
+) / (
+
+    y_max - y_min + 1e-8
+)
+
+# ----------------------------------------------------------
+# SAVE TARGET SCALING
+# ----------------------------------------------------------
+
+np.save(
+    MODEL_WEIGHTS_PATH.parent / "y_min.npy",
+    y_min
+)
+
+np.save(
+    MODEL_WEIGHTS_PATH.parent / "y_max.npy",
+    y_max
+)
 
 
 # ==========================================================
@@ -131,14 +187,15 @@ X_mean = X_train.mean(axis=0)
 
 X_std = X_train.std(axis=0)
 
-# prevent divide-by-zero
+# ----------------------------------------------------------
+# PREVENT DIVIDE-BY-ZERO
+# ----------------------------------------------------------
 
-X_std[X_std == 0] = 1
+X_std[X_std == 0] = 1.0
 
-
-# ==========================================================
+# ----------------------------------------------------------
 # SAVE SCALER PARAMETERS
-# ==========================================================
+# ----------------------------------------------------------
 
 np.save(
 
@@ -147,7 +204,6 @@ np.save(
     "X_mean.npy",
 
     X_mean
-
 )
 
 np.save(
@@ -157,27 +213,31 @@ np.save(
     "X_std.npy",
 
     X_std
-
 )
 
 print("Feature scaler saved.")
 
-
-# ==========================================================
+# ----------------------------------------------------------
 # APPLY NORMALISATION
-# ==========================================================
+# ----------------------------------------------------------
 
 X_train = (
 
     X_train - X_mean
 
-) / X_std
+) / (
+
+    X_std + 1e-8
+)
 
 X_test = (
 
     X_test - X_mean
 
-) / X_std
+) / (
+
+    X_std + 1e-8
+)
 
 print("Feature normalisation complete.")
 
@@ -195,7 +255,6 @@ model = NeuralNetwork(
     HIDDEN_LAYER_2,
 
     OUTPUT_SIZE
-
 )
 
 print("Neural network initialised.")
@@ -216,14 +275,13 @@ model.train(
     TRAINING_EPOCHS,
 
     LEARNING_RATE
-
 )
 
 print("Training complete.")
 
 
 # ==========================================================
-# SAVE MODEL WEIGHTS
+# SAVE MODEL
 # ==========================================================
 
 model.save_model()
@@ -241,11 +299,31 @@ predictions = model.predict(
 
 predictions = np.array(
     predictions
-).flatten()
+)
 
-y_test = np.array(
-    y_test
-).flatten()
+# ----------------------------------------------------------
+# INVERSE NORMALISE PREDICTIONS
+# ----------------------------------------------------------
+
+predictions = (
+
+    predictions *
+
+    (y_max - y_min)
+
+) + y_min
+
+y_test_actual = (
+
+    y_test *
+
+    (y_max - y_min)
+
+) + y_min
+
+predictions = predictions.flatten()
+
+y_test_actual = y_test_actual.flatten()
 
 print("Predictions generated.")
 
@@ -255,27 +333,44 @@ print("Predictions generated.")
 # ==========================================================
 
 mse = np.mean(
-    (y_test - predictions) ** 2
+    (y_test_actual - predictions) ** 2
 )
 
 rmse = np.sqrt(mse)
 
 mae = np.mean(
-    np.abs(y_test - predictions)
+    np.abs(
+        y_test_actual - predictions
+    )
 )
 
+# ----------------------------------------------------------
 # R² SCORE
+# ----------------------------------------------------------
 
 ss_total = np.sum(
-    (y_test - np.mean(y_test)) ** 2
+
+    (
+        y_test_actual -
+
+        np.mean(y_test_actual)
+    ) ** 2
 )
 
 ss_residual = np.sum(
-    (y_test - predictions) ** 2
+
+    (
+        y_test_actual -
+
+        predictions
+    ) ** 2
 )
 
 r2_score = (
-    1 - (ss_residual / ss_total)
+
+    1 -
+
+    (ss_residual / (ss_total + 1e-8))
 )
 
 print("\n===== MODEL EVALUATION =====\n")
@@ -310,7 +405,6 @@ save_path = (
     PLOTS_DIR /
 
     "training_loss.png"
-
 )
 
 mpl.savefig(
@@ -320,7 +414,6 @@ mpl.savefig(
     dpi=300,
 
     bbox_inches="tight"
-
 )
 
 mpl.close()
@@ -336,30 +429,27 @@ mpl.figure(figsize=(10, 7))
 
 mpl.scatter(
 
-    y_test,
+    y_test_actual,
 
     predictions,
 
     alpha=0.6,
 
     s=40
-
 )
 
 min_val = min(
 
-    np.min(y_test),
+    np.min(y_test_actual),
 
     np.min(predictions)
-
 )
 
 max_val = max(
 
-    np.max(y_test),
+    np.max(y_test_actual),
 
     np.max(predictions)
-
 )
 
 mpl.plot(
@@ -371,7 +461,6 @@ mpl.plot(
     linestyle="--",
 
     linewidth=2
-
 )
 
 mpl.xlabel(
@@ -393,7 +482,6 @@ save_path = (
     PLOTS_DIR /
 
     "actual_vs_predicted.png"
-
 )
 
 mpl.savefig(
@@ -403,7 +491,6 @@ mpl.savefig(
     dpi=300,
 
     bbox_inches="tight"
-
 )
 
 mpl.close()
@@ -416,7 +503,7 @@ print("Prediction comparison graph saved.")
 # ==========================================================
 
 residuals = (
-    y_test - predictions
+    y_test_actual - predictions
 )
 
 mpl.figure(figsize=(8, 6))
@@ -426,7 +513,6 @@ mpl.hist(
     residuals,
 
     bins=30
-
 )
 
 mpl.xlabel(
@@ -448,7 +534,6 @@ save_path = (
     PLOTS_DIR /
 
     "residual_distribution.png"
-
 )
 
 mpl.savefig(
@@ -458,12 +543,10 @@ mpl.savefig(
     dpi=300,
 
     bbox_inches="tight"
-
 )
 
 mpl.close()
 
 print("Residual distribution graph saved.")
-
 
 print("\nTraining pipeline complete.")
