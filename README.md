@@ -1,6 +1,8 @@
 # Neural Traffic Routing and Congestion Optimisation System
 
-![Adaptive Traffic Heatmap](src/images/heatmap.png)
+<p align="center">
+  <img src="src/images/"heatmap.png" width="500">
+</p>
 
 An intelligent traffic-routing and congestion optimisation system built using:
 
