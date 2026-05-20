@@ -10,8 +10,6 @@ from utils.config import (
 
     ROAD_TYPE_MAPPING,
 
-    DEFAULT_ROAD_TYPE,
-
     TRAINING_DATA_PATH,
 
     RESULTS_CSV_PATH
@@ -57,6 +55,10 @@ def calculate_average_edge_usage(edge_usage):
     Calculate average edge utilisation.
     """
 
+    if len(edge_usage) == 0:
+
+        return 0
+
     total_usage = sum(edge_usage.values())
 
     return total_usage / len(edge_usage)
@@ -70,6 +72,10 @@ def calculate_max_edge_usage(edge_usage):
     """
     Return maximum edge utilisation.
     """
+
+    if len(edge_usage) == 0:
+
+        return 0
 
     return max(edge_usage.values())
 
@@ -115,6 +121,10 @@ def calculate_average_travel_cost(
     """
     Calculate average travel cost.
     """
+
+    if len(vehicles) == 0:
+
+        return 0
 
     total_cost = calculate_total_travel_cost(
 
@@ -220,9 +230,10 @@ def update_congestion_weights(
 
             data = edge_data[key]
 
-            base_travel_time = data[
-                "base_travel_time"
-            ]
+            base_travel_time = data.get(
+                "base_travel_time",
+                1
+            )
 
             road_length = data.get(
                 "length",
@@ -249,26 +260,28 @@ def update_congestion_weights(
 
             road_type_encoded = (
                 ROAD_TYPE_MAPPING.get(
-
                     road_type,
-
-                    DEFAULT_ROAD_TYPE
+                    5
                 )
             )
 
             nearby_congestion = usage
 
+            # --------------------------------------------------
+            # FORCE NUMERIC FEATURES
+            # --------------------------------------------------
+
             features = [[
 
-                usage,
+                float(usage),
 
-                road_length,
+                float(road_length),
 
-                speed_limit,
+                float(speed_limit),
 
-                nearby_congestion,
+                float(nearby_congestion),
 
-                road_type_encoded
+                float(road_type_encoded)
             ]]
 
             # --------------------------------------------------
@@ -279,22 +292,22 @@ def update_congestion_weights(
 
                 try:
 
-                    prediction = (
+                    prediction = float(
+
                         predict_congestion(
                             features
                         )
                     )
 
                     multiplier = (
-                        1.0 + prediction * 4.0
+
+                        1.0 +
+
+                        prediction
                     )
 
-                    multiplier *= 2.0
-
                     multiplier = max(
-
                         1.0,
-
                         min(multiplier, 5.0)
                     )
 
@@ -307,33 +320,52 @@ def update_congestion_weights(
                     multiplier = 1.0
 
             # --------------------------------------------------
-            # Static Weighting
+            # Smooth Static Weighting
             # --------------------------------------------------
 
             else:
 
-                if usage < average_edge_usage * 0.5:
+                congestion_factor = (
 
-                    multiplier = 1.0
+                    usage /
 
-                elif usage < average_edge_usage:
+                    max(average_edge_usage, 1)
 
-                    multiplier = 1.1
+                )
 
-                elif usage < average_edge_usage * 1.5:
+                multiplier = (
 
-                    multiplier = 1.4
+                        1.0 +
 
-                elif usage < average_edge_usage * 2:
+                        (congestion_factor ** 1.3) * 0.8
+                )
 
-                    multiplier = 1.8
+                multiplier = min(
+                    multiplier,
+                    5.0
+                )
 
-                else:
-
-                    multiplier = 2.5
+            # --------------------------------------------------
+            # UPDATED TRAVEL TIME
+            # --------------------------------------------------
 
             updated_travel_time = (
                 base_travel_time * multiplier
+            )
+
+            # --------------------------------------------------
+            # CONGESTION MEMORY / DECAY
+            # --------------------------------------------------
+
+            updated_travel_time = (
+
+                base_travel_time +
+
+                (
+                    updated_travel_time -
+
+                    base_travel_time
+                ) * 0.95
             )
 
             data["travel_time"] = (
@@ -411,7 +443,8 @@ def export_training_data(
 ):
     """
     Export neural network
-    training samples.
+    training samples using
+    observed congestion ratios.
     """
 
     file_exists = TRAINING_DATA_PATH.exists()
@@ -427,6 +460,10 @@ def export_training_data(
 
         writer = csv.writer(file)
 
+        # --------------------------------------------------
+        # CSV HEADER
+        # --------------------------------------------------
+
         if not file_exists:
 
             writer.writerow([
@@ -441,8 +478,12 @@ def export_training_data(
 
                 "road_type",
 
-                "multiplier"
+                "congestion_ratio"
             ])
+
+        # --------------------------------------------------
+        # EDGE DATA EXPORT
+        # --------------------------------------------------
 
         for u, v, key, data in graph.edges(
 
@@ -481,51 +522,53 @@ def export_training_data(
 
             road_type_encoded = (
                 ROAD_TYPE_MAPPING.get(
-
                     road_type,
-
-                    DEFAULT_ROAD_TYPE
+                    5
                 )
             )
 
             nearby_congestion = usage
 
-            features = [[
+            # --------------------------------------------------
+            # OBSERVED CONGESTION
+            # --------------------------------------------------
 
-                usage,
+            base_travel_time = data.get(
+                "base_travel_time",
+                1
+            )
 
-                road_length,
+            current_travel_time = data.get(
+                "travel_time",
+                base_travel_time
+            )
 
-                speed_limit,
+            if base_travel_time == 0:
 
-                nearby_congestion,
+                base_travel_time = 1
 
-                road_type_encoded
-            ]]
+            congestion_ratio = (
 
-            try:
+                current_travel_time /
 
-                multiplier = (
-                    predict_congestion(
-                        features
-                    )
-                )
+                base_travel_time
+            )
 
-            except Exception:
-
-                multiplier = 1.0
+            # --------------------------------------------------
+            # WRITE TRAINING SAMPLE
+            # --------------------------------------------------
 
             writer.writerow([
 
-                usage,
+                float(usage),
 
-                road_length,
+                float(road_length),
 
-                speed_limit,
+                float(speed_limit),
 
-                nearby_congestion,
+                float(nearby_congestion),
 
-                road_type_encoded,
+                float(road_type_encoded),
 
-                multiplier
+                float(congestion_ratio)
             ])

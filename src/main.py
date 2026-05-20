@@ -34,7 +34,7 @@ def main():
 
         algorithm=algorithm,
 
-        use_neural_network=False
+        use_neural_network=True
 
     )
 

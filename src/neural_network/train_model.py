@@ -81,7 +81,7 @@ for column in feature_columns:
 
 training_data = training_data.dropna(
 
-    subset=feature_columns + ["multiplier"]
+    subset=feature_columns + ["congestion_ratio"]
 
 )
 
@@ -92,7 +92,7 @@ X = training_data[
 ].values.astype(float)
 
 y = training_data[[
-    "multiplier"
+    "congestion_ratio"
 ]].values.astype(float)
 
 
@@ -100,11 +100,7 @@ y = training_data[[
 # TARGET OUTPUT
 # ==========================================================
 
-y = training_data[[
-
-    "multiplier"
-
-]].values
+y = training_data[['congestion_ratio']].values
 
 
 print(f"Feature shape: {X.shape}")
