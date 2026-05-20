@@ -1,7 +1,7 @@
 # Neural Traffic Routing and Congestion Optimisation System
 
 <p align="center">
-  <img src="src/images/"heatmap.png" width="500">
+  <img src="cache/heatmap_astar_neural_network_400.png" width="650">
 </p>
 
 An intelligent traffic-routing and congestion optimisation system built using:
@@ -13,7 +13,7 @@ An intelligent traffic-routing and congestion optimisation system built using:
 - Machine Learning
 - Adaptive Congestion Weighting
 
-This project simulates large-scale vehicle routing across real-world urban road networks while dynamically adapting to congestion using both:
+This project simulates large-scale vehicle routing across real-world urban road networks while dynamically adapting to congestion using:
 - classical shortest-path routing algorithms
 - machine-learning-based congestion prediction
 
@@ -72,80 +72,76 @@ Edge weights are continuously updated to simulate evolving traffic conditions.
 
 ## Custom Neural Network
 
-A fully connected feed-forward neural network built from scratch using NumPy.
+A fully connected feed-forward neural network built entirely from scratch using NumPy.
 
 Features include:
 - forward propagation
 - backpropagation
 - ReLU activation
 - regression output
-- model persistence
 - feature normalisation
+- model persistence
 - saved inference scaling
 
 The network learns adaptive congestion-weighting behaviour from generated simulation data.
 
 ---
 
-## Automated Visualisation System
-
-Automatically generates:
-- congestion heatmaps
-- runtime scaling graphs
-- congestion comparison graphs
-- bottleneck analysis
-- rerouting behaviour graphs
-- neural-network evaluation plots
-
----
-
-# Example Outputs
+# Visualisation Results
 
 ## Runtime Scaling Comparison
 
-![Runtime Scaling](results/plots/results/runtime_comparison.png)
+<p align="center">
+  <img src="results/figures/runtime_comparison.png" width="700">
+</p>
 
 ---
 
-## Congestion Reduction Analysis
+## Runtime Scalability Analysis
 
-![Congestion Comparison](results/plots/results/average_congestion_comparison.png)
-
----
-
-## Maximum Bottleneck Severity
-
-![Bottleneck Analysis](results/plots/results/maximum_bottleneck_comparison.png)
+<p align="center">
+  <img src="results/figures/runtime_scalability.png" width="700">
+</p>
 
 ---
 
-## Adaptive Rerouting Behaviour
+## Maximum Bottleneck Comparison
 
-![Adaptive Rerouting](results/plots/results/adaptive_rerouting_comparison.png)
-
----
-
-## Network Travel Cost
-
-![Travel Cost Analysis](results/plots/results/total_travel_cost_comparison.png)
+<p align="center">
+  <img src="results/figures/maximum_bottleneck_comparison.png" width="700">
+</p>
 
 ---
 
-## Neural Network Training Loss
+## Total Travel Cost Comparison
 
-![Training Loss](results/plots/training_loss.png)
-
----
-
-## Prediction Accuracy
-
-![Prediction Accuracy](results/plots/actual_vs_predicted.png)
+<p align="center">
+  <img src="results/figures/total_travel_cost_comparison.png" width="700">
+</p>
 
 ---
 
-## Residual Error Distribution
+## Average Travel Cost
 
-![Residual Distribution](results/figures/residual_histogram.png)
+<p align="center">
+  <img src="results/figures/average_travel_cost.png" width="700">
+</p>
+
+---
+
+## Adaptive Rerouting Analysis
+
+<p align="center">
+  <img src="results/figures/rerouted_vehicles.png" width="700">
+</p>
+
+---
+
+## Search Space Exploration
+
+<p align="center">
+  <img src="results/figures/nodes_visited.png" width="700">
+</p>
 
 ---
 
@@ -156,6 +152,8 @@ Neural-Traffic-Routing-and-Congestion-Optimisation-System/
 │
 ├── assets/
 ├── cache/
+│   └── heatmap_astar_neural_network_400.png
+│
 ├── docs/
 │
 ├── models/
@@ -175,27 +173,19 @@ Neural-Traffic-Routing-and-Congestion-Optimisation-System/
 │   └── research_log.md
 │
 ├── results/
-│   ├── actual_vs_predicted.png
-│   ├── training_loss.png
-│   │
-│   ├── figures/
-│   │   └── residual_histogram.png
-│   │
 │   ├── data/
 │   │   ├── processed/
 │   │   ├── raw/
 │   │   └── training/
 │   │
-│   └── plots/
-│       ├── heatmaps/
-│       │   └── heatmap_astar_100.png
-│       │
-│       └── results/
-│           ├── adaptive_rerouting_comparison.png
-│           ├── average_congestion_comparison.png
-│           ├── maximum_bottleneck_comparison.png
-│           ├── runtime_comparison.png
-│           └── total_travel_cost_comparison.png
+│   └── figures/
+│       ├── average_travel_cost.png
+│       ├── maximum_bottleneck_comparison.png
+│       ├── nodes_visited.png
+│       ├── rerouted_vehicles.png
+│       ├── runtime_comparison.png
+│       ├── runtime_scalability.png
+│       └── total_travel_cost_comparison.png
 │
 ├── src/
 │   ├── neural_network/
@@ -276,7 +266,6 @@ Vehicles are assigned:
 
 Vehicles compute shortest paths using:
 - Dijkstra
-or
 - A*
 
 ---
@@ -315,9 +304,9 @@ The system evaluates:
 - Average Travel Cost
 - Runtime Scaling
 - Vehicle Rerouting Count
+- Search Space Complexity
 - Congestion Distribution
-- Neural Network Prediction Error
-- Residual Error Distribution
+- Neural Network Prediction Behaviour
 
 ---
 
