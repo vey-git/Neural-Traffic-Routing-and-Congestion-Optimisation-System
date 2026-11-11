@@ -4,144 +4,103 @@
   <img src="cache/heatmap_astar_neural_network_400.png" width="650">
 </p>
 
-An intelligent traffic-routing and congestion optimisation system built using:
+A simulation of congestion-aware routing on Oxford's real road network, built with Python, OSMnx and NetworkX, with a feed-forward neural network implemented from scratch in NumPy.
 
-- Python
-- OSMnx
-- NetworkX
-- NumPy
-- Machine Learning
-- Adaptive Congestion Weighting
-
-This project simulates large-scale vehicle routing across real-world urban road networks while dynamically adapting to congestion using:
-- classical shortest-path routing algorithms
-- machine-learning-based congestion prediction
+**📄 Full report:** [Congestion-Aware Adaptive Traffic Routing (PDF, revised November 2026)](report/Congestion_Aware_Traffic_Routing_Report.pdf). The LaTeX source is in [`report/`](report/).
 
 ---
 
 # Overview
 
-This project investigates how adaptive congestion-aware routing can improve traffic flow across urban environments.
-
 The system:
-- generates real-world road graphs using OpenStreetMap
-- simulates thousands of vehicles
-- dynamically updates edge congestion
-- reroutes vehicles using shortest-path algorithms
-- evaluates routing efficiency through metrics and visualisations
 
-A custom feed-forward neural network was implemented entirely from scratch using NumPy to learn adaptive congestion-weighting behaviour from generated traffic data.
-
----
-
-# Key Features
-
-## Real-World Road Network Simulation
-
-Uses OpenStreetMap road data through OSMnx to generate:
-- urban traffic graphs
-- drivable road networks
-- realistic edge travel times
-- road metadata
+- builds Oxford's drivable road network from OpenStreetMap as a weighted directed graph (travel times in seconds)
+- creates vehicles with random origins and destinations and routes them with **Dijkstra's algorithm** or **A\***
+- counts how many vehicles use each road and increases the travel time of every used road in proportion to its usage
+- re-routes every vehicle once on the updated travel times
+- records metrics and before/after congestion heat-maps, and exports one training example per road
+- trains a feed-forward neural network, written from scratch in NumPy, to predict each road's congestion multiplier
 
 ---
 
-## Intelligent Routing Algorithms
+# Key Findings
 
-Implemented routing algorithms:
-
-- Dijkstra’s Algorithm
-- A* Search Algorithm
-
-Vehicles dynamically reroute after congestion updates.
-
----
-
-## Adaptive Congestion Modelling
-
-Traffic congestion is estimated using:
-- edge utilisation
-- nearby congestion density
-- road type
-- road length
-- speed limits
-
-Edge weights are continuously updated to simulate evolving traffic conditions.
+| Question | Finding |
+|---|---|
+| Does A\* speed up routing? | **No.** The heuristic was straight-line distance in *degrees* while edge costs are *seconds*, so it gave almost no guidance. A\* took up to ~30% longer end to end than NetworkX's bidirectional Dijkstra. |
+| Where does congestion build up? | **On a few corridors.** From 250 vehicles upwards, the busiest single road segment carried **11–13% of all vehicles**. |
+| Does re-routing fix it? | **It moves congestion rather than removing it.** 82–91% of vehicles changed route, because each vehicle's own presence raises the cost of its route, and bottlenecks shifted to other corridors. |
+| Can a neural network learn the congestion weighting? | **Not with the current training settings.** It predicts ≈1.02 for every road (test R² = −0.09), because the learning rate and weight initialisation were too small for the weights to move in 1,000 epochs. The report diagnoses this and sets out the fix. |
 
 ---
 
-## Custom Neural Network
+# Results
 
-A fully connected feed-forward neural network built entirely from scratch using NumPy.
+## Runtime
 
-Features include:
-- forward propagation
-- backpropagation
-- ReLU activation
-- regression output
-- feature normalisation
-- model persistence
-- saved inference scaling
+<p align="center"><img src="report/figures/runtime_scalability.png" width="600"></p>
 
-The network learns adaptive congestion-weighting behaviour from generated simulation data.
+## Busiest road segment as traffic grows
 
----
+<p align="center"><img src="report/figures/maximum_edge_usage.png" width="600"></p>
 
-# Visualisation Results
+## Vehicles re-routed
 
-## Runtime Scaling Comparison
+<p align="center"><img src="report/figures/rerouted_vehicles.png" width="600"></p>
+
+## Congestion before and after re-routing
 
 <p align="center">
-  <img src="results/figures/runtime_comparison.png" width="700">
+  <img src="report/figures/heatmap_before.png" width="380">
+  <img src="report/figures/heatmap_after.png" width="380">
 </p>
+
+## Neural network: predicted vs actual multiplier
+
+<p align="center"><img src="report/figures/actual_vs_predicted.png" width="600"></p>
+
+The full set of figures and their interpretation is in the [report](report/Congestion_Aware_Traffic_Routing_Report.pdf).
 
 ---
 
-## Runtime Scalability Analysis
+# How Congestion Is Modelled
 
-<p align="center">
-  <img src="results/figures/runtime_scalability.png" width="700">
-</p>
+After the initial routes are computed, each edge's usage $V_e$ is the number of routes that include it, and $\bar V$ is the mean usage over used edges. Every used edge's travel time becomes
 
----
+$$
+w_e = w_e^{\text{base}} \left(1 + 0.3325\,\frac{V_e}{\max(\bar V, 1)}\right)
+$$
 
-## Maximum Bottleneck Comparison
+(the multiplier is capped at 4.8). It is always applied to the stored baseline travel time, so repeated updates cannot compound. Every vehicle is then re-routed once.
 
-<p align="center">
-  <img src="results/figures/maximum_bottleneck_comparison.png" width="700">
-</p>
+Heat-maps colour each road by $V_e / \bar V$: green below 0.5, yellow 0.5–1.0, orange 1.0–1.5, red 1.5 and above.
 
 ---
 
-## Total Travel Cost Comparison
+# Neural Network
 
-<p align="center">
-  <img src="results/figures/total_travel_cost_comparison.png" width="700">
-</p>
+```text
+Input Layer (5 features)
+        ↓
+Hidden Layer 1 (16 neurons, ReLU)
+        ↓
+Hidden Layer 2 (8 neurons, ReLU)
+        ↓
+Output Layer (1 neuron, linear)
+```
 
----
+Forward propagation, back-propagation and gradient descent are implemented by hand in NumPy (`src/neural_network/neural_network.py`).
 
-## Average Travel Cost
+| Feature | Description |
+|---|---|
+| Edge usage | Number of vehicle routes using the edge |
+| Road length | Length in metres |
+| Speed limit | km/h (OSMnx, imputed where missing) |
+| "Nearby congestion" | Edge usage × (length / 100) × (50 / speed). Despite the name, it uses only the edge's own values |
+| Road type | Integer code, 0 (motorway) to 5 (residential) |
 
-<p align="center">
-  <img src="results/figures/average_travel_cost.png" width="700">
-</p>
-
----
-
-## Adaptive Rerouting Analysis
-
-<p align="center">
-  <img src="results/figures/rerouted_vehicles.png" width="700">
-</p>
-
----
-
-## Search Space Exploration
-
-<p align="center">
-  <img src="results/figures/nodes_visited.png" width="700">
-</p>
+**Target:** the congestion multiplier $\min(1 + 0.35\,V_e/\max(\bar V,1),\ 5)$.
+**Training:** full-batch gradient descent, learning rate 0.0001, 1,000 epochs, MSE loss, 80/20 train/test split.
 
 ---
 
@@ -149,266 +108,99 @@ The network learns adaptive congestion-weighting behaviour from generated simula
 
 ```text
 Neural-Traffic-Routing-and-Congestion-Optimisation-System/
-│
-├── assets/
-├── cache/
-│   └── heatmap_astar_neural_network_400.png
-│
-├── docs/
-│
-├── models/
-│   └── weights/
-│       ├── W1.npy
-│       ├── W2.npy
-│       ├── W3.npy
-│       ├── b1.npy
-│       ├── b2.npy
-│       ├── b3.npy
-│       ├── X_mean.npy
-│       └── X_std.npy
-│
+├── cache/                    # example heat-maps
+├── report/                   # LaTeX source, figures and PDF of the report
 ├── research/
-│   ├── experiments.md
+│   ├── experiments.md        # logged simulation runs
 │   ├── ideas.md
 │   └── research_log.md
-│
 ├── results/
-│   ├── data/
-│   │   ├── processed/
-│   │   ├── raw/
-│   │   └── training/
-│   │
-│   └── figures/
-│       ├── average_travel_cost.png
-│       ├── maximum_bottleneck_comparison.png
-│       ├── nodes_visited.png
-│       ├── rerouted_vehicles.png
-│       ├── runtime_comparison.png
-│       ├── runtime_scalability.png
-│       └── total_travel_cost_comparison.png
-│
+│   ├── figures/              # comparison plots
+│   └── plots/                # neural-network plots
 ├── src/
-│   ├── neural_network/
-│   │   ├── __init__.py
-│   │   ├── inference.py
-│   │   ├── neural_network.py
-│   │   └── train_model.py
-│   │
-│   ├── routing/
-│   │   ├── __init__.py
-│   │   ├── graph.py
-│   │   ├── metrics.py
-│   │   ├── simulation.py
-│   │   └── vehicle.py
-│   │
-│   ├── utils/
-│   │   └── config.py
-│   │
-│   ├── visualisation/
-│   │   ├── __init__.py
-│   │   ├── evaluation_graphs.py
-│   │   └── visualisation.py
-│   │
-│   ├── __init__.py
-│   └── main.py
-│
+│   ├── main.py               # simulation entry point
+│   ├── cache/                # OSMnx download cache
+│   ├── neural_network/       # network, training and inference
+│   ├── routing/              # graph, vehicles, simulation, metrics
+│   ├── utils/config.py       # settings and paths
+│   └── visualisation/        # heat-maps and evaluation graphs
 ├── README.md
 └── requirements.txt
 ```
 
----
-
-# Neural Network Architecture
-
-The congestion prediction model uses a fully connected feed-forward neural network:
-
-```text
-Input Layer (5 Features)
-        ↓
-Hidden Layer 1 (16 Neurons)
-        ↓
-Hidden Layer 2 (8 Neurons)
-        ↓
-Output Layer (1 Regression Output)
-```
-
----
-
-# Neural Network Input Features
-
-| Feature | Description |
-|---|---|
-| Edge Usage | Number of vehicles using an edge |
-| Road Length | Physical road length |
-| Speed Limit | Road speed limit |
-| Nearby Congestion | Local congestion estimate |
-| Road Type | Encoded road classification |
-
----
-
-# Simulation Workflow
-
-## 1. Graph Generation
-
-Road networks are generated from OpenStreetMap.
-
----
-
-## 2. Vehicle Generation
-
-Vehicles are assigned:
-- random start nodes
-- random destination nodes
-
----
-
-## 3. Initial Routing
-
-Vehicles compute shortest paths using:
-- Dijkstra
-- A*
-
----
-
-## 4. Congestion Analysis
-
-Edge usage is analysed across the network.
-
----
-
-## 5. Adaptive Weighting
-
-Travel times are dynamically updated using congestion weighting.
-
----
-
-## 6. Vehicle Rerouting
-
-Vehicles recompute routes using updated edge weights.
-
----
-
-## 7. Evaluation
-
-Performance metrics and visualisations are generated automatically.
-
----
-
-# Evaluation Metrics
-
-The system evaluates:
-
-- Average Edge Usage
-- Maximum Congestion Bottleneck
-- Total Travel Cost
-- Average Travel Cost
-- Runtime Scaling
-- Vehicle Rerouting Count
-- Search Space Complexity
-- Congestion Distribution
-- Neural Network Prediction Behaviour
+Generated data (`results/data/`) and trained weights (`models/`) are created when the code runs and are not stored in the repository.
 
 ---
 
 # Installation
 
-## Clone Repository
+Requires **Python 3.10–3.12**. The pinned `pandas==2.2.2` has no Python 3.13 build.
 
 ```bash
 git clone https://github.com/vey-git/Neural-Traffic-Routing-and-Congestion-Optimisation-System.git
-
 cd Neural-Traffic-Routing-and-Congestion-Optimisation-System
-```
 
----
-
-## Create Virtual Environment
-
-```bash
 python -m venv .venv
-```
-
----
-
-## Activate Environment
-
-### macOS / Linux
-
-```bash
-source .venv/bin/activate
-```
-
-### Windows
-
-```bash
-.venv\Scripts\activate
-```
-
----
-
-## Install Dependencies
-
-```bash
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
 ---
 
-# Running Simulations
+# Running
 
-## Run Main Simulation
+The modules import each other relative to `src/`, so run them as follows.
 
-```bash
-python -m src.main
-```
-
----
-
-## Train Neural Network
+**Run a simulation** (prompts for the number of vehicles and the algorithm). This needs an internet connection the first time, to download the Oxford road network:
 
 ```bash
-python -m src.neural_network.train_model
+cd src
+python main.py
 ```
 
----
+Each run appends a row to `results/data/processed/results_nn.csv` and training examples to `results/data/training/training_data.csv`.
 
-## Generate Evaluation Graphs
+**Train the neural network** (from the repository root, after running some simulations):
 
 ```bash
-python -m src.visualisation.visualisation
+PYTHONPATH=src python -m src.neural_network.train_model
 ```
 
----
-
-# Future Improvements
-
-Planned future extensions include:
-
-- Reinforcement learning routing
-- Real-time traffic API integration
-- GPU acceleration
-- Distributed simulation
-- Multi-agent traffic systems
-- Live congestion forecasting
-- Graph neural networks
-- SUMO integration
+**Evaluation graphs:** `src/visualisation/evaluation_graphs.py` reads results with relative paths, so run it from inside `src/visualisation/`.
 
 ---
 
-# Technologies Used
+# Known Limitations
 
-- Python
-- NumPy
-- Pandas
-- Matplotlib
-- NetworkX
-- OSMnx
-- OpenStreetMap
+These are discussed in the report's *Threats to Validity* section:
+
+- No random seed is fixed, so Dijkstra and A\* runs use different vehicles.
+- Re-routing always uses Dijkstra's algorithm, whichever algorithm made the initial routes.
+- `nodes_explored` records route length, not the number of nodes a search examined.
+- Runtime includes graph loading, heat-map rendering and data export.
+- `inference.py` loads `models/y_min.npy` relative to the working directory, so when the simulation runs from `src/` the trained model is not found and predictions fall back to 1.0.
+
+---
+
+# Next Steps
+
+1. Fix the seed and re-route with the chosen algorithm, so the comparison is fair.
+2. Use an admissible heuristic in seconds: great-circle distance ÷ maximum road speed.
+3. Count settled nodes and time searches separately.
+4. Retrain the network with He initialisation, a larger learning rate and mini-batches; compare against mean and linear-regression baselines.
+5. Iterate re-routing towards an equilibrium, excluding each vehicle's own usage.
+6. Measure edge betweenness centrality to test whether it predicts the persistent bottlenecks.
+
+---
+
+# Technologies
+
+Python · NumPy · Pandas · Matplotlib · NetworkX · OSMnx · OpenStreetMap · LaTeX
 
 ---
 
 # Author
 
-Harvey  
-Computer Science with Artificial Intelligence  
+Harvey Humphrey
+BSc Computer Science with Artificial Intelligence
 Oxford Brookes University
